@@ -75,7 +75,8 @@ h1,h2,h3,h4{font-family:var(--font-heading);font-weight:400}
 .avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--amber-600),var(--orange-500));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
 .sidebar-footer-name{font-size:13px;font-weight:600}.sidebar-footer-role{font-size:11px;color:rgba(255,255,255,.4)}
 
-.main{flex:1;margin-left:260px;min-height:100vh;padding-bottom:40px}
+.main{flex:1;margin-left:260px;min-height:100vh;padding-bottom:40px;min-width:0;max-width:100%}
+.bar-row{min-width:0}.bar-track{min-width:0}.area-chart{max-width:100%}.minibars{min-width:0}
 /* TOP BAR */
 .topbar{height:60px;background:#fff;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:80}
 .topbar-shop{display:flex;align-items:center;gap:10px}
@@ -109,8 +110,9 @@ h1,h2,h3,h4{font-family:var(--font-heading);font-weight:400}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* STATS */
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
-.stat-card{background:#fff;border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-100);transition:all .2s}
+.stats-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-100);transition:all .2s;min-width:0}
+.stat-card-value{overflow-wrap:anywhere}
 .stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
 .stat-card.alert{border-color:var(--red-200,#fecaca);background:linear-gradient(180deg,#fff,var(--red-50))}
 .stat-card-label{font-size:11.5px;color:var(--gray-500);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
@@ -127,9 +129,9 @@ h1,h2,h3,h4{font-family:var(--font-heading);font-weight:400}
 .stat-card-icon.orange{background:#fff7ed}.stat-card-icon.orange svg{fill:var(--orange-600)}
 .stat-card-icon.purple{background:var(--purple-100)}.stat-card-icon.purple svg{fill:var(--purple-600)}
 
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
-.card{background:#fff;border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-100)}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.card{background:#fff;border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-100);min-width:0}
 .card-title{font-family:var(--font-heading);font-size:18px;margin-bottom:16px;color:var(--gray-900);display:flex;align-items:center;justify-content:space-between}
 .pill{padding:3px 10px;border-radius:12px;font-size:11px;font-family:var(--font-body);font-weight:600}
 .pill.red{background:var(--red-100);color:var(--red-600)}
@@ -159,7 +161,8 @@ h1,h2,h3,h4{font-family:var(--font-heading);font-weight:400}
 .minibar .bar{width:100%;max-width:42px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--amber-400),var(--orange-500));transition:height .6s ease;position:relative;min-height:4px}
 .minibar .bar:hover{filter:brightness(1.08)}
 .minibar .bar-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--gray-600);font-family:var(--font-mono);white-space:nowrap}
-.minibar .bar-lbl{font-size:11px;color:var(--gray-500);font-weight:500}
+.minibar .bar-lbl{font-size:11px;color:var(--gray-500);font-weight:500;width:auto;text-align:center}
+.minibar{min-width:0}
 
 .activity-feed{display:flex;flex-direction:column}
 .activity-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--gray-100)}
@@ -369,7 +372,62 @@ tbody tr.clickable{cursor:pointer}
   .tag-sheet{grid-template-columns:repeat(3,1fr)}
 }
 
-@media(max-width:1200px){.stats-row{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}.pos-grid{grid-template-columns:1fr}.tag-sheet{grid-template-columns:repeat(2,1fr)}}
+/* mobile hamburger + backdrop */
+.menu-btn{display:none;background:none;border:none;cursor:pointer;color:var(--gray-600);padding:6px;margin-right:2px;border-radius:8px;flex-shrink:0}
+.menu-btn:hover{background:var(--gray-100)}
+.menu-btn svg{width:24px;height:24px;display:block}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:99;opacity:0;transition:opacity .25s}
+.sidebar-backdrop.show{display:block;opacity:1}
+.topbar-shop{min-width:0}
+.topbar-shop-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* RESPONSIVE */
+@media(max-width:1200px){
+  .stats-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid-2{grid-template-columns:minmax(0,1fr)}
+  .pos-grid{grid-template-columns:minmax(0,1fr)}
+  .tag-sheet{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-xl)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .menu-btn{display:inline-flex}
+  .topbar{padding:0 16px}
+  .page-content{padding:16px 18px 28px}
+  .page-header{padding:18px 18px 0}
+  .stats-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .donut-wrap{flex-direction:column;align-items:stretch;gap:18px}
+  .donut{align-self:center}
+  .topbar-search{width:150px}
+}
+@media(max-width:600px){
+  html{font-size:13px}
+  .stat-card{padding:14px 16px}
+  .stat-card-value{font-size:21px}
+  .stat-card-icon{width:32px;height:32px;margin-bottom:8px}
+  .drill-hint{display:none}
+  .topbar-search{display:none}
+  .topbar-shop-loc{display:none}
+  .topbar-right{gap:12px}
+  .page-title{font-size:21px}
+  .page-actions .btn{padding:7px 11px;font-size:12px}
+  .scan-box{flex-direction:column}
+  .scan-input{font-size:14px}
+  .sku-hero{flex-direction:column}
+  .sku-metrics{grid-template-columns:repeat(2,1fr)}
+  .fraud-compare{flex-wrap:wrap;justify-content:center}
+  .trend-foot{flex-wrap:wrap;gap:8px}
+  .bar-lbl{width:96px;font-size:11px}
+  .cart-items{max-height:220px}
+  /* modal becomes a bottom sheet */
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{max-width:100%;max-height:90vh;border-radius:var(--radius-xl) var(--radius-xl) 0 0}
+}
+@media(max-width:430px){
+  .stats-row{grid-template-columns:minmax(0,1fr)}
+  .sku-metrics{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
@@ -393,7 +451,8 @@ tbody tr.clickable{cursor:pointer}
 
 <div class="app">
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2L18.8 7 12 9.8 5.2 7 12 4.2zM4 8.5l7 3.3v7.4l-7-3.5V8.5zm16 0v7.2l-7 3.5v-7.4l7-3.3z"/></svg></div><span class="sidebar-logo-text">StockPilot<small>BY SURYA AI</small></span></div></div>
   <nav class="sidebar-nav">
     <div class="nav-section-label">Main</div>
@@ -410,7 +469,10 @@ tbody tr.clickable{cursor:pointer}
 <main class="main">
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="topbar-shop"><div class="topbar-shop-icon">SD</div><div><div class="topbar-shop-name">Sri Devi Sarees</div><div class="topbar-shop-loc">Salem, Tamil Nadu · GSTIN 33ABCDE1234F1Z5</div></div></div>
+  <div style="display:flex;align-items:center;gap:8px;min-width:0">
+    <button class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    <div class="topbar-shop"><div class="topbar-shop-icon">SD</div><div style="min-width:0"><div class="topbar-shop-name">Sri Devi Sarees</div><div class="topbar-shop-loc">Salem, Tamil Nadu · GSTIN 33ABCDE1234F1Z5</div></div></div>
+  </div>
   <div class="topbar-right">
     <input class="topbar-search" placeholder="Search SKU, design...">
     <div class="topbar-bell" title="Alerts">&#128276;<span class="dot"></span></div>
@@ -640,13 +702,13 @@ const INV=[
  {sku:'SA-008',name:'Cotton Saree - Handloom Beige',cat:'Cotton',cost:1100,price:2400,in:40,sold:31,age:26},
  {sku:'SA-009',name:'Designer Georgette - Wine Sequin',cat:'Georgette',cost:5500,price:9800,in:14,sold:10,age:41},
  {sku:'SA-010',name:'Georgette - Floral Pastel',cat:'Georgette',cost:3200,price:6200,in:20,sold:6,age:118},
- {sku:'SA-011',name:'Kanjivaram Silk - Bottle Green',cat:'Silk',cost:13500,price:22000,in:8,sold:1,age:214},
- {sku:'SA-012',name:'Banarasi Silk - Deep Purple',cat:'Banarasi',cost:10500,price:17500,in:9,sold:1,age:198},
+ {sku:'SA-011',name:'Kanjivaram Silk - Bottle Green',cat:'Silk',cost:13500,price:22000,in:4,sold:1,age:214},
+ {sku:'SA-012',name:'Banarasi Silk - Deep Purple',cat:'Banarasi',cost:10500,price:17500,in:3,sold:1,age:198},
  {sku:'SA-013',name:'Tussar Silk - Natural Beige',cat:'Silk',cost:3800,price:6800,in:15,sold:3,age:142},
  {sku:'SA-014',name:'Banarasi Silk - Emerald Green',cat:'Banarasi',cost:7600,price:12500,in:13,sold:11,age:31},
- {sku:'SA-015',name:'Cotton Saree - Plain Cream',cat:'Cotton',cost:600,price:1500,in:80,sold:14,age:205},
+ {sku:'SA-015',name:'Cotton Saree - Plain Cream',cat:'Cotton',cost:600,price:1500,in:60,sold:40,age:70},
  {sku:'SA-016',name:'Designer Curtain - Maroon Velvet',cat:'Curtain',cost:2400,price:4800,in:30,sold:24,age:27},
- {sku:'SA-017',name:'Designer Curtain - Ivory Sheer',cat:'Curtain',cost:1800,price:3600,in:35,sold:4,age:191},
+ {sku:'SA-017',name:'Designer Curtain - Ivory Sheer',cat:'Curtain',cost:1800,price:3600,in:6,sold:2,age:191},
  {sku:'SA-018',name:'Kanjivaram Bridal - Red Gold',cat:'Silk',cost:18500,price:25000,in:6,sold:5,age:24},
 ];
 
@@ -804,12 +866,15 @@ function openDay(day,val){
 }
 
 /* ============ NAV ============ */
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-backdrop').classList.toggle('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-backdrop').classList.remove('show');}
 function sw(sec,el){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const nav=el&&el.classList.contains('nav-item')?el:document.querySelector('[data-sec="'+sec+'"]');
   if(nav)nav.classList.add('active');
+  closeSidebar();
   window.scrollTo(0,0);
   if(sec==='billing')setTimeout(()=>{const si=document.getElementById('scan-input');if(si)si.focus();},50);
 }
