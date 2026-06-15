@@ -362,6 +362,15 @@ tbody tr.clickable{cursor:pointer}
 .dl-name{font-size:13px;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dl-meta{font-size:11px;color:var(--gray-400);font-family:var(--font-mono);margin-top:1px}
 .dl-val{font-size:13px;font-weight:700;font-family:var(--font-mono);color:var(--gray-700);white-space:nowrap;flex-shrink:0}
+.profit-line{display:flex;align-items:center;gap:6px;margin-top:5px;font-family:var(--font-mono);font-size:10.5px;flex-wrap:wrap}
+.pl-buy{color:var(--gray-500)}
+.pl-arrow{color:var(--gray-300)}
+.pl-sell{color:var(--gray-700);font-weight:600}
+.pl-profit{color:var(--green-700);font-weight:700;background:var(--green-50);border:1px solid var(--green-100);padding:1px 8px;border-radius:10px}
+.sold-row{align-items:flex-start}
+.sold-row .swatch.sm{margin-top:2px}
+.sold-row .dl-val{font-size:14px;align-self:center}
+.dl-val.profit{color:var(--green-700)}
 .modal-empty{text-align:center;padding:30px 10px;color:var(--gray-400);font-size:13px}
 
 /* PRINT */
@@ -512,11 +521,11 @@ tbody tr.clickable{cursor:pointer}
     <div class="grid-2">
       <div class="card"><div class="card-title">Sell-through rate by category</div><div id="dash-sellthrough"></div></div>
       <div class="card"><div class="card-title">Recent Activity</div><div class="activity-feed">
-        <div class="activity-item"><div class="activity-icon green">&#10003;</div><div><div style="font-size:13px;color:var(--gray-600)">Sold <b>SA-014</b> Banarasi Silk Green &mdash; ₹12,500</div><div class="activity-time">8 min ago · Counter 1</div></div></div>
+        <div class="activity-item"><div class="activity-icon green">&#10003;</div><div><div style="font-size:13px;color:var(--gray-600)">Sold <b>SA-014</b> Banarasi Silk Green &mdash; ₹12,500 <span style="color:var(--gray-400)">(cost ₹7,600 ·</span> <b style="color:var(--green-600)">+₹4,900</b><span style="color:var(--gray-400)">)</span></div><div class="activity-time">8 min ago · Counter 1</div></div></div>
         <div class="activity-item"><div class="activity-icon red">&#9888;</div><div><div style="font-size:13px;color:var(--gray-600)"><b style="color:var(--red-600)">Tag mismatch blocked</b> at counter &mdash; SA-009 photo did not match item</div><div class="activity-time">41 min ago · Counter 2</div></div></div>
         <div class="activity-item"><div class="activity-icon blue">&#128230;</div><div><div style="font-size:13px;color:var(--gray-600)">Intake batch <b>B-2206</b> &mdash; 15 sarees from Kumaran Silks tagged</div><div class="activity-time">2 hrs ago · Suresh</div></div></div>
         <div class="activity-item"><div class="activity-icon amber">&#8987;</div><div><div style="font-size:13px;color:var(--gray-600)"><b>SA-006</b> Mysore Silk now flagged <b style="color:var(--amber-600)">slow-mover</b> (97 days)</div><div class="activity-time">Today, 9:10 AM</div></div></div>
-        <div class="activity-item"><div class="activity-icon green">&#10003;</div><div><div style="font-size:13px;color:var(--gray-600)">Sold <b>SA-001</b> Kanjivaram Maroon &mdash; ₹18,000</div><div class="activity-time">Today, 8:52 AM</div></div></div>
+        <div class="activity-item"><div class="activity-icon green">&#10003;</div><div><div style="font-size:13px;color:var(--gray-600)">Sold <b>SA-001</b> Kanjivaram Maroon &mdash; ₹18,000 <span style="color:var(--gray-400)">(cost ₹11,500 ·</span> <b style="color:var(--green-600)">+₹6,500</b><span style="color:var(--gray-400)">)</span></div><div class="activity-time">Today, 8:52 AM</div></div></div>
       </div></div>
     </div>
   </div>
@@ -773,6 +782,19 @@ function listModal(title,sub,items,valFn,footHTML){
     :`<div class="modal-empty">No items here.</div>`;
   openModal(title,sub,body,footHTML);
 }
+// when a SKU entered inventory, derived from its age (base date = 15 Jun 2026)
+function addedDate(age){const base=new Date(2026,5,15);const d=new Date(base.getTime()-age*86400000);return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+// a sale line that shows the full money trail: added-on, buy -> sell -> profit, and total profit on the right
+function soldRow(s,metaText,qty){
+  qty=qty||1; const unit=s.price-s.cost, tot=unit*qty;
+  return `<div class="dl-row sold-row" onclick="skuDetail('${s.sku}')">${swatchSm(s.name)}
+    <div class="dl-info">
+      <div class="dl-name">${s.name}</div>
+      <div class="dl-meta">${s.sku} · ${metaText} · added ${addedDate(s.age)}</div>
+      <div class="profit-line"><span class="pl-buy">Buy ${inr(s.cost)}</span><span class="pl-arrow">&rarr;</span><span class="pl-sell">Sell ${inr(s.price)}</span><span class="pl-profit">+${inr(unit)}${qty>1?' &times;'+qty:''} · ${s.marginPct}%</span></div>
+    </div>
+    <div class="dl-val profit">+${inr(tot)}</div></div>`;
+}
 
 // rich single-SKU detail
 function skuDetail(code){
@@ -793,6 +815,7 @@ function skuDetail(code){
         <div style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400);font-weight:600">${s.sku} · ${s.cat}</div>
         <div style="font-family:var(--font-heading);font-size:20px;color:var(--gray-900);line-height:1.2;margin:4px 0 8px">${s.name}</div>
         ${statusBadge(s.status)}
+        <div style="font-size:11px;color:var(--gray-400);margin-top:8px;font-family:var(--font-mono)">Added to inventory: ${addedDate(s.age)} · ${s.age}d ago</div>
       </div>
     </div>
     <div class="sku-metrics">
@@ -827,13 +850,19 @@ function openMetric(key){
     listModal('Sarees in stock',items.reduce((a,s)=>a+s.left,0)+' pieces across '+items.length+' designs.',items,s=>s.left+' left');
   } else if(key==='soldMonth'){
     const items=[...INV].filter(s=>s.sold>0).sort((a,b)=>b.sold-a.sold);
-    listModal('Sold this month',items.reduce((a,s)=>a+s.sold,0)+' pieces sold. Top sellers first.',items,s=>s.sold+' sold');
+    const totSold=items.reduce((a,s)=>a+s.sold,0);
+    const totProfit=items.reduce((a,s)=>a+s.sold*(s.price-s.cost),0);
+    const body=`<div class="detail-list">${items.map(s=>soldRow(s,s.sold+' sold',s.sold)).join('')}</div>
+      <div class="callout blue" style="margin-top:14px"><span class="ci">&#128176;</span><span><b>${totSold} pieces sold</b> this month for a realised profit of <b>${inr(totProfit)}</b>. Each line shows when it was stocked, what we paid, what we sold it for, and the margin earned.</span></div>`;
+    openModal('Sold this month',totSold+' pieces · +'+inr(totProfit)+' profit',body);
   } else if(key==='deadValue'){ openStatusList('Dead'); }
   else if(key==='todaySales'){
     const bills=[{sku:'SA-014',t:'Counter 1 · 8 min ago'},{sku:'SA-001',t:'Counter 1 · 8:52 AM'},{sku:'SA-003',t:'Counter 2 · 8:30 AM'},{sku:'SA-007',t:'Counter 1 · 8:05 AM'},{sku:'SA-016',t:'Counter 2 · 7:50 AM'}];
-    const body=`<div class="detail-list">${bills.map(b=>{const s=findSku(b.sku);return `<div class="dl-row" onclick="skuDetail('${b.sku}')">${swatchSm(s.name)}<div class="dl-info"><div class="dl-name">${s.name}</div><div class="dl-meta">${b.sku} · ${b.t}</div></div><div class="dl-val">${inr(s.price)}</div></div>`;}).join('')}</div>
-      <div class="callout blue" style="margin-top:14px"><span class="ci">&#128181;</span><span><b>9 bills · ₹64,200</b> today across 2 counters. 1 tag-mismatch was blocked at the counter.</span></div>`;
-    openModal("Today's sales",'₹64,200 · 9 bills · 2 counters.',body);
+    const shownSale=bills.reduce((a,b)=>a+findSku(b.sku).price,0);
+    const shownProfit=bills.reduce((a,b)=>{const s=findSku(b.sku);return a+(s.price-s.cost);},0);
+    const body=`<div class="detail-list">${bills.map(b=>soldRow(findSku(b.sku),b.t,1)).join('')}</div>
+      <div class="callout blue" style="margin-top:14px"><span class="ci">&#128181;</span><span><b>9 bills · ₹64,200</b> today across 2 counters. These ${bills.length} recent bills: <b>${inr(shownSale)}</b> sold &middot; cost <b>${inr(shownSale-shownProfit)}</b> &middot; <b>+${inr(shownProfit)} profit</b>. 1 tag-mismatch was blocked at the counter.</span></div>`;
+    openModal("Today's sales",'₹64,200 · 9 bills · 2 counters · each line shows buy &rarr; sell &rarr; profit',body);
   }
   else if(key==='potential'){
     const items=[...INV].sort((a,b)=>b.left*b.price-a.left*a.price);
@@ -841,7 +870,10 @@ function openMetric(key){
   }
   else if(key==='realised'){
     const items=[...INV].filter(s=>s.sold>0).sort((a,b)=>b.sold*(b.price-b.cost)-a.sold*(a.price-a.cost));
-    listModal('Realised margin','Profit booked on sarees already sold.',items,s=>inr(s.sold*(s.price-s.cost)));
+    const totProfit=items.reduce((a,s)=>a+s.sold*(s.price-s.cost),0);
+    const body=`<div class="detail-list">${items.map(s=>soldRow(s,s.sold+' sold',s.sold)).join('')}</div>
+      <div class="callout blue" style="margin-top:14px"><span class="ci">&#128200;</span><span>Total realised margin <b>${inr(totProfit)}</b> — profit booked on sarees already sold: (sell &minus; buy) &times; units sold, per design.</span></div>`;
+    openModal('Realised margin',inr(totProfit)+' profit booked',body);
   }
 }
 function openStatusList(status){
