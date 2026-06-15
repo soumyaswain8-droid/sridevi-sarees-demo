@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StockPilot — Saree Inventory & Loss Prevention · by Surya AI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23f59e0b'/%3E%3Cpath d='M12 5l-6 3v8l6 3 6-3V8z' fill='white'/%3E%3C/svg%3E">
+<meta name="description" content="StockPilot — saree inventory, billing and loss-prevention demo by Surya AI.">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --amber-50:#fffbeb;--amber-100:#fef3c7;--amber-200:#fde68a;--amber-300:#fcd34d;
+  --amber-400:#fbbf24;--amber-500:#f59e0b;--amber-600:#d97706;--amber-700:#b45309;
+  --orange-400:#fb923c;--orange-500:#f97316;--orange-600:#ea580c;
+  --green-50:#f0fdf4;--green-100:#dcfce7;--green-500:#22c55e;--green-600:#16a34a;--green-700:#15803d;
+  --blue-50:#eff6ff;--blue-100:#dbeafe;--blue-500:#3b82f6;--blue-600:#2563eb;
+  --red-50:#fef2f2;--red-100:#fee2e2;--red-500:#ef4444;--red-600:#dc2626;--red-700:#b91c1c;
+  --purple-50:#f5f3ff;--purple-100:#ede9fe;--purple-500:#a855f7;--purple-600:#9333ea;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
+  --gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;
+  --gray-800:#1f2937;--gray-900:#111827;
+  --cream:#faf8f5;--cream-dark:#f5f0ea;
+  --sidebar-bg:#1a1a2e;--sidebar-hover:#16213e;--sidebar-active:#0f3460;
+  --font-body:'Plus Jakarta Sans',system-ui,sans-serif;
+  --font-heading:'DM Serif Display',Georgia,serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+  --shadow-xl:0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
+  --radius:8px;--radius-lg:12px;--radius-xl:16px;
+}
+html{font-size:14px}
+body{font-family:var(--font-body);background:var(--cream);color:var(--gray-800);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4{font-family:var(--font-heading);font-weight:400}
+.mono{font-family:var(--font-mono)}
+::selection{background:var(--amber-200);color:var(--gray-900)}
+
+/* LOADING */
+#loading-screen{position:fixed;inset:0;z-index:9999;background:var(--sidebar-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s,visibility .6s}
+#loading-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.logo-anim{display:flex;align-items:center;gap:14px;margin-bottom:30px}
+.logo-icon{width:54px;height:54px;background:linear-gradient(135deg,var(--amber-400),var(--orange-500));border-radius:15px;display:flex;align-items:center;justify-content:center;animation:pulse-glow 1.5s ease-in-out infinite}
+.logo-icon svg{width:30px;height:30px;fill:#fff}
+.logo-text{font-family:var(--font-heading);font-size:32px;color:#fff;letter-spacing:-.5px}
+.logo-text small{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--amber-400);display:block;letter-spacing:1px;margin-top:-4px}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 0 20px rgba(245,158,11,0)}}
+.loading-bar{width:220px;height:3px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.loading-bar-inner{height:100%;background:linear-gradient(90deg,var(--amber-500),var(--orange-500));border-radius:3px;animation:loading 1.8s ease-in-out infinite}
+@keyframes loading{0%{width:0;margin-left:0}50%{width:70%}100%{width:0;margin-left:100%}}
+.loading-subtext{color:rgba(255,255,255,.35);font-size:12px;margin-top:16px;letter-spacing:1px;text-transform:uppercase}
+
+/* SHELL */
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--sidebar-bg);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-header{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sidebar-logo{display:flex;align-items:center;gap:10px}
+.sidebar-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--amber-400),var(--orange-500));border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-logo-icon svg{width:22px;height:22px;fill:#fff}
+.sidebar-logo-text{font-family:var(--font-heading);font-size:21px;letter-spacing:-.3px;line-height:1}
+.sidebar-logo-text small{font-family:var(--font-body);font-size:9.5px;font-weight:600;color:var(--amber-400);display:block;letter-spacing:1px;margin-top:2px}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-section-label{padding:10px 20px 4px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);font-weight:600}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;margin:2px 8px;border-radius:var(--radius);cursor:pointer;transition:all .15s;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;position:relative;user-select:none}
+.nav-item:hover{background:var(--sidebar-hover);color:rgba(255,255,255,.9)}
+.nav-item.active{background:var(--sidebar-active);color:#fff}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--amber-500);border-radius:0 3px 3px 0}
+.nav-item svg{width:18px;height:18px;opacity:.7;flex-shrink:0}.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red-500);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px}
+.avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--amber-600),var(--orange-500));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.sidebar-footer-name{font-size:13px;font-weight:600}.sidebar-footer-role{font-size:11px;color:rgba(255,255,255,.4)}
+
+.main{flex:1;margin-left:260px;min-height:100vh;padding-bottom:40px}
+/* TOP BAR */
+.topbar{height:60px;background:#fff;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:80}
+.topbar-shop{display:flex;align-items:center;gap:10px}
+.topbar-shop-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700}
+.topbar-shop-name{font-size:14px;font-weight:700;color:var(--gray-900);line-height:1.2}
+.topbar-shop-loc{font-size:11px;color:var(--gray-400)}
+.topbar-right{display:flex;align-items:center;gap:18px}
+.topbar-search{padding:8px 12px 8px 34px;border:1px solid var(--gray-200);border-radius:20px;font-size:12.5px;width:220px;font-family:var(--font-body);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat}
+.topbar-search:focus{outline:none;border-color:var(--amber-500)}
+.topbar-bell{position:relative;cursor:pointer;color:var(--gray-400)}
+.topbar-bell .dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--red-500);border-radius:50%;border:2px solid #fff}
+.topbar-user{display:flex;align-items:center;gap:9px;cursor:pointer}
+.topbar-user .avatar{width:34px;height:34px}
+.topbar-user-name{font-size:13px;font-weight:600;color:var(--gray-800)}
+.topbar-user-role{font-size:11px;color:var(--gray-400)}
+
+.page-header{padding:22px 28px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.page-title{font-family:var(--font-heading);font-size:25px;color:var(--gray-900)}
+.page-subtitle{font-size:13px;color:var(--gray-500);margin-top:2px}
+.page-actions{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:var(--font-body)}
+.btn-primary{background:linear-gradient(135deg,var(--amber-500),var(--orange-500));color:#fff;box-shadow:0 2px 8px rgba(245,158,11,.3)}
+.btn-primary:hover{box-shadow:0 4px 12px rgba(245,158,11,.4);transform:translateY(-1px)}
+.btn-secondary{background:#fff;color:var(--gray-700);border:1px solid var(--gray-200)}
+.btn-secondary:hover{border-color:var(--gray-300);background:var(--gray-50)}
+.btn-success{background:var(--green-600);color:#fff}.btn-success:hover{background:var(--green-700)}
+.btn-danger{background:var(--red-600);color:#fff}.btn-danger:hover{background:var(--red-700)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.page-content{padding:18px 28px 32px}
+.section{display:none;animation:fadeIn .3s ease}.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-100);transition:all .2s}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.stat-card.alert{border-color:var(--red-200,#fecaca);background:linear-gradient(180deg,#fff,var(--red-50))}
+.stat-card-label{font-size:11.5px;color:var(--gray-500);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat-card-value{font-size:26px;font-weight:800;margin-top:4px;color:var(--gray-900);font-family:var(--font-mono);letter-spacing:-1px}
+.stat-card-value.revenue{color:var(--green-700)}
+.stat-card-value.danger{color:var(--red-600)}
+.stat-card-sub{font-size:11px;color:var(--gray-400);margin-top:4px}
+.stat-card-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.stat-card-icon svg{width:19px;height:19px}
+.stat-card-icon.amber{background:var(--amber-100)}.stat-card-icon.amber svg{fill:var(--amber-600)}
+.stat-card-icon.green{background:var(--green-100)}.stat-card-icon.green svg{fill:var(--green-600)}
+.stat-card-icon.blue{background:var(--blue-100)}.stat-card-icon.blue svg{fill:var(--blue-600)}
+.stat-card-icon.red{background:var(--red-100)}.stat-card-icon.red svg{fill:var(--red-600)}
+.stat-card-icon.orange{background:#fff7ed}.stat-card-icon.orange svg{fill:var(--orange-600)}
+.stat-card-icon.purple{background:var(--purple-100)}.stat-card-icon.purple svg{fill:var(--purple-600)}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.card{background:#fff;border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-100)}
+.card-title{font-family:var(--font-heading);font-size:18px;margin-bottom:16px;color:var(--gray-900);display:flex;align-items:center;justify-content:space-between}
+.pill{padding:3px 10px;border-radius:12px;font-size:11px;font-family:var(--font-body);font-weight:600}
+.pill.red{background:var(--red-100);color:var(--red-600)}
+.pill.green{background:var(--green-100);color:var(--green-700)}
+.pill.amber{background:var(--amber-100);color:var(--amber-700)}
+
+/* mover/dead-stock lists */
+.mover-list{display:flex;flex-direction:column;gap:8px}
+.mover-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius);border:1px solid var(--gray-100);transition:all .15s}
+.mover-item:hover{border-color:var(--gray-200);background:var(--gray-50);transform:translateX(3px)}
+.swatch{width:42px;height:54px;border-radius:6px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),var(--shadow-sm);position:relative;overflow:hidden}
+.swatch.sm{width:32px;height:42px;border-radius:5px}
+.swatch.lg{width:120px;height:150px;border-radius:10px}
+.swatch::after{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.14) 0 2px,transparent 2px 9px),repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 12px);mix-blend-mode:overlay}
+.swatch .border{position:absolute;left:0;right:0;bottom:0;height:22%;background:rgba(0,0,0,.16);background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.3) 0 3px,transparent 3px 7px)}
+.mover-info{flex:1;min-width:0}
+.mover-name{font-size:13px;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mover-meta{font-size:11px;color:var(--gray-400);margin-top:1px;font-family:var(--font-mono)}
+.mover-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.mb-green{background:var(--green-100);color:var(--green-700)}
+.mb-red{background:var(--red-100);color:var(--red-600)}
+.mb-amber{background:var(--amber-100);color:var(--amber-700)}
+
+/* bar chart */
+.minibars{display:flex;align-items:flex-end;gap:14px;height:160px;padding:10px 4px 0}
+.minibar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.minibar .bar{width:100%;max-width:42px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--amber-400),var(--orange-500));transition:height .6s ease;position:relative;min-height:4px}
+.minibar .bar:hover{filter:brightness(1.08)}
+.minibar .bar-val{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--gray-600);font-family:var(--font-mono);white-space:nowrap}
+.minibar .bar-lbl{font-size:11px;color:var(--gray-500);font-weight:500}
+
+.activity-feed{display:flex;flex-direction:column}
+.activity-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--gray-100)}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.activity-icon.green{background:var(--green-100);color:var(--green-600)}
+.activity-icon.blue{background:var(--blue-100);color:var(--blue-600)}
+.activity-icon.amber{background:var(--amber-100);color:var(--amber-600)}
+.activity-icon.red{background:var(--red-100);color:var(--red-600)}
+.activity-time{font-size:11px;color:var(--gray-400);white-space:nowrap;margin-top:2px}
+
+/* TABLE */
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-500);padding:11px 12px;border-bottom:2px solid var(--gray-100);white-space:nowrap;user-select:none}
+thead th.num{text-align:right}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--gray-50);font-size:13px;color:var(--gray-700);vertical-align:middle}
+tbody td.num{text-align:right;font-family:var(--font-mono)}
+tbody tr{transition:background .1s}tbody tr:hover{background:var(--amber-50)}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-fast{background:var(--green-100);color:var(--green-700)}
+.badge-slow{background:var(--amber-100);color:var(--amber-700)}
+.badge-dead{background:var(--red-100);color:var(--red-600)}
+.margin-good{color:var(--green-600);font-weight:700}
+.margin-mid{color:var(--amber-600);font-weight:700}
+.margin-low{color:var(--red-600);font-weight:700}
+
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.search-input{padding:8px 12px 8px 36px;border:1px solid var(--gray-200);border-radius:var(--radius);font-size:13px;width:280px;font-family:var(--font-body);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 10px center no-repeat;transition:border .15s}
+.search-input:focus{outline:none;border-color:var(--amber-500);box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+.filter-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200);background:#fff;color:var(--gray-600);transition:all .15s;user-select:none}
+.filter-chip:hover{border-color:var(--gray-300)}
+.filter-chip.active{background:var(--amber-500);color:#fff;border-color:var(--amber-500)}
+.filter-chip.active.fast{background:var(--green-600);border-color:var(--green-600)}
+.filter-chip.active.slow{background:var(--amber-500);border-color:var(--amber-500)}
+.filter-chip.active.dead{background:var(--red-600);border-color:var(--red-600)}
+.filter-divider{width:1px;height:24px;background:var(--gray-200);margin:0 4px}
+
+/* FORMS */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:1px solid var(--gray-200);border-radius:var(--radius);font-size:13px;font-family:var(--font-body)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--amber-500);box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.callout{display:flex;gap:10px;padding:12px 14px;border-radius:var(--radius);font-size:12.5px;line-height:1.5}
+.callout.blue{background:var(--blue-50);border:1px solid var(--blue-100);color:#1e40af}
+.callout.amber{background:var(--amber-50);border:1px solid var(--amber-200);color:#92400e}
+.callout .ci{font-size:16px;flex-shrink:0}
+
+/* TAG SHEET */
+.tag-sheet{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+.tag{border:1px dashed var(--gray-300);border-radius:8px;padding:12px 14px;background:#fff;position:relative}
+.tag-hole{position:absolute;top:10px;right:12px;width:11px;height:11px;border-radius:50%;border:2px solid var(--gray-300);background:var(--cream)}
+.tag-brand{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--amber-600)}
+.tag-name{font-size:12px;font-weight:700;color:var(--gray-800);margin-top:3px;line-height:1.25;min-height:30px}
+.tag-price{font-size:16px;font-weight:800;font-family:var(--font-mono);color:var(--gray-900);margin-top:4px}
+.barcode{display:flex;align-items:flex-end;gap:1px;height:38px;margin-top:8px}
+.barcode i{display:block;width:2px;background:var(--gray-900);height:100%}
+.tag-sku{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--gray-600);text-align:center;margin-top:4px;letter-spacing:1px}
+
+/* POS */
+.pos-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:20px;align-items:start}
+.scan-box{display:flex;gap:8px;margin-bottom:14px}
+.scan-input{flex:1;padding:14px 16px;border:2px solid var(--amber-400);border-radius:var(--radius-lg);font-size:15px;font-family:var(--font-mono);font-weight:600;letter-spacing:1px;background:var(--amber-50)}
+.scan-input:focus{outline:none;border-color:var(--orange-500);box-shadow:0 0 0 4px rgba(245,158,11,.12)}
+.scan-hint{font-size:11px;color:var(--gray-400);margin-bottom:14px}
+.scan-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.scan-chip{padding:5px 11px;border-radius:16px;font-size:11px;font-family:var(--font-mono);font-weight:600;background:#fff;border:1px solid var(--gray-200);cursor:pointer;transition:all .12s}
+.scan-chip:hover{border-color:var(--amber-400);background:var(--amber-50)}
+
+/* confirm-item hero */
+.confirm-item{display:none;gap:16px;padding:18px;border-radius:var(--radius-lg);border:2px solid var(--green-500);background:var(--green-50);margin-bottom:14px;animation:fadeIn .25s ease}
+.confirm-item.show{display:flex}
+.confirm-item.mismatch{border-color:var(--red-500);background:var(--red-50)}
+.confirm-meta{flex:1;min-width:0}
+.confirm-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--green-700)}
+.confirm-item.mismatch .confirm-tag{color:var(--red-600)}
+.confirm-name{font-family:var(--font-heading);font-size:22px;color:var(--gray-900);line-height:1.15;margin:3px 0}
+.confirm-sub{font-size:12px;color:var(--gray-500);font-family:var(--font-mono)}
+.confirm-price{font-size:26px;font-weight:800;font-family:var(--font-mono);color:var(--gray-900);margin-top:6px}
+.confirm-add{margin-top:10px}
+
+/* fraud banner */
+.fraud-banner{display:none;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);background:#fef2f2;border:2px solid var(--red-500);border-left:5px solid var(--red-600);margin-bottom:14px;animation:shake .4s ease}
+.fraud-banner.show{display:flex}
+.fraud-banner .fi{font-size:24px;flex-shrink:0;color:var(--red-600)}
+.fraud-banner .ftitle{font-size:14px;font-weight:800;color:var(--red-700)}
+.fraud-banner .fdesc{font-size:12.5px;color:#7f1d1d;line-height:1.5;margin-top:3px}
+.fraud-banner .fdesc b{font-family:var(--font-mono)}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.fraud-compare{display:flex;gap:14px;align-items:center;margin-top:10px}
+.fc-side{text-align:center}
+.fc-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-500);margin-bottom:5px}
+.fc-vs{font-size:12px;font-weight:800;color:var(--red-600)}
+
+/* cart */
+.cart-panel{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);border:1px solid var(--gray-100);overflow:hidden}
+.cart-head{padding:14px 18px;background:var(--gray-900);color:#fff;display:flex;align-items:center;justify-content:space-between}
+.cart-head h3{font-family:var(--font-heading);font-size:17px}
+.cart-head .cnt{font-size:11px;color:rgba(255,255,255,.6)}
+.cart-items{max-height:280px;overflow-y:auto}
+.cart-line{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--gray-50)}
+.cart-line-info{flex:1;min-width:0}
+.cart-line-name{font-size:12.5px;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-line-sku{font-size:10.5px;color:var(--gray-400);font-family:var(--font-mono)}
+.cart-line-price{font-size:13px;font-weight:700;font-family:var(--font-mono);color:var(--gray-800)}
+.cart-line-rm{cursor:pointer;color:var(--gray-300);font-size:16px;line-height:1;padding:2px 4px}
+.cart-line-rm:hover{color:var(--red-500)}
+.cart-empty{padding:36px 20px;text-align:center;color:var(--gray-400);font-size:13px}
+.cart-totals{padding:14px 18px;background:var(--gray-50);border-top:1px solid var(--gray-100)}
+.tot-row{display:flex;justify-content:space-between;font-size:13px;color:var(--gray-600);padding:3px 0}
+.tot-row.grand{font-size:18px;font-weight:800;color:var(--gray-900);border-top:1px dashed var(--gray-300);margin-top:6px;padding-top:8px}
+.tot-row .mono{font-family:var(--font-mono)}
+.cart-pay{padding:16px 18px;display:flex;gap:12px;align-items:center}
+.upi-qr{width:74px;height:74px;border-radius:8px;flex-shrink:0;background:#fff;border:1px solid var(--gray-200);padding:6px}
+.upi-qr svg{width:100%;height:100%}
+
+/* REPORTS */
+.bar-row{display:flex;align-items:center;gap:12px;padding:7px 0}
+.bar-lbl{width:150px;font-size:12px;font-weight:500;color:var(--gray-600);flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:26px;background:var(--gray-100);border-radius:6px;overflow:hidden;cursor:pointer}
+.bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;transition:width .7s ease}
+.bar-fill span{font-size:11px;font-weight:700;color:#fff;font-family:var(--font-mono)}
+.bar-track:hover .bar-fill{filter:brightness(1.08)}
+
+/* TOASTS */
+.toast-container{position:fixed;top:74px;right:20px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:13px 18px;border-radius:var(--radius);color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-lg);transform:translateX(120%);transition:transform .4s cubic-bezier(.4,0,.2,1);min-width:280px;max-width:400px;pointer-events:auto}
+.toast.show{transform:translateX(0)}
+.toast.green{background:#166534}.toast.blue{background:#1e40af}.toast.amber{background:#92400e}.toast.red{background:#991b1b}
+.toast-icon{font-size:18px;flex-shrink:0}
+
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:26px;padding:6px 0}
+.donut{width:158px;height:158px;border-radius:50%;position:relative;flex-shrink:0;cursor:default}
+.donut-hole{position:absolute;inset:26%;background:#fff;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px var(--gray-100)}
+.donut-center{font-size:18px;font-weight:800;font-family:var(--font-mono);color:var(--gray-900);letter-spacing:-.5px}
+.donut-center-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-400);font-weight:600;margin-top:1px}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:9px;min-width:0}
+.dlg-item{display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:var(--radius);border:1px solid var(--gray-100);cursor:pointer;transition:all .12s}
+.dlg-item:hover{border-color:var(--gray-200);background:var(--gray-50);transform:translateX(2px)}
+.dlg-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.dlg-name{font-size:12.5px;font-weight:600;color:var(--gray-700);flex:1}
+.dlg-val{font-size:12.5px;font-weight:700;font-family:var(--font-mono);color:var(--gray-800)}
+.dlg-pct{font-size:11px;color:var(--gray-400);font-family:var(--font-mono);width:38px;text-align:right}
+
+/* AREA / LINE CHART */
+.area-chart{width:100%;height:auto;display:block;overflow:visible}
+.area-chart .grid-line{stroke:var(--gray-100);stroke-width:1}
+.area-chart .area-fill{opacity:.18}
+.area-chart .area-line{fill:none;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.area-chart .pt{cursor:pointer;transition:r .12s}
+.area-chart .pt-hit{cursor:pointer}
+.area-chart .x-lbl{font-family:var(--font-body);font-size:9.5px;fill:var(--gray-400);font-weight:500}
+.area-chart .y-lbl{font-family:var(--font-mono);font-size:9px;fill:var(--gray-300)}
+.trend-foot{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-100);font-size:12px}
+.trend-foot .tf-k{color:var(--gray-400)}.trend-foot .tf-v{font-weight:700;font-family:var(--font-mono);color:var(--gray-800)}
+
+/* CLICKABLE AFFORDANCES */
+.clickable{cursor:pointer}
+.stat-card.clickable:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px);border-color:var(--amber-300)}
+.mover-item.clickable{cursor:pointer}
+tbody tr.clickable{cursor:pointer}
+.bar-row.clickable .bar-track{cursor:pointer}
+.bar-row.clickable:hover .bar-fill{filter:brightness(1.1)}
+.minibar.clickable{cursor:pointer}
+.minibar.clickable:hover .bar{filter:brightness(1.12)}
+.rep-margin-row{cursor:pointer}.rep-margin-row:hover{background:var(--amber-50)}
+.drill-hint{font-size:10px;color:var(--gray-300);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:6px;display:flex;align-items:center;gap:4px}
+.stat-card.clickable:hover .drill-hint{color:var(--amber-500)}
+
+/* MODAL / DETAIL DRAWER */
+.modal-overlay{position:fixed;inset:0;background:rgba(17,24,39,.55);backdrop-filter:blur(2px);z-index:600;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+.modal-overlay.show{opacity:1;visibility:visible}
+.modal{background:#fff;border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;transform:translateY(14px) scale(.98);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.modal-overlay.show .modal{transform:translateY(0) scale(1)}
+.modal-head{padding:20px 22px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.modal-title{font-family:var(--font-heading);font-size:21px;color:var(--gray-900);line-height:1.15}
+.modal-sub{font-size:12.5px;color:var(--gray-500);margin-top:3px}
+.modal-close{cursor:pointer;color:var(--gray-300);font-size:24px;line-height:1;padding:2px 6px;border-radius:6px;transition:all .12s;flex-shrink:0}
+.modal-close:hover{color:var(--gray-700);background:var(--gray-100)}
+.modal-body{padding:20px 22px;overflow-y:auto}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--gray-100);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+/* sku detail */
+.sku-hero{display:flex;gap:18px;margin-bottom:18px}
+.sku-hero .swatch.lg{width:104px;height:132px}
+.sku-hero-meta{flex:1;min-width:0}
+.sku-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.metric-box{background:var(--gray-50);border:1px solid var(--gray-100);border-radius:var(--radius);padding:11px 13px}
+.metric-box .ml{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-400);font-weight:600}
+.metric-box .mv{font-size:17px;font-weight:800;font-family:var(--font-mono);color:var(--gray-900);margin-top:3px;letter-spacing:-.5px}
+.metric-box .mv.green{color:var(--green-700)}.metric-box .mv.red{color:var(--red-600)}.metric-box .mv.amber{color:var(--amber-700)}
+.detail-list{display:flex;flex-direction:column;gap:8px}
+.dl-row{display:flex;align-items:center;gap:12px;padding:9px 11px;border-radius:var(--radius);border:1px solid var(--gray-100);cursor:pointer;transition:all .12s}
+.dl-row:hover{border-color:var(--amber-300);background:var(--amber-50)}
+.dl-info{flex:1;min-width:0}
+.dl-name{font-size:13px;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-meta{font-size:11px;color:var(--gray-400);font-family:var(--font-mono);margin-top:1px}
+.dl-val{font-size:13px;font-weight:700;font-family:var(--font-mono);color:var(--gray-700);white-space:nowrap;flex-shrink:0}
+.modal-empty{text-align:center;padding:30px 10px;color:var(--gray-400);font-size:13px}
+
+/* PRINT */
+@media print{
+  body *{visibility:hidden}
+  #print-area,#print-area *{visibility:visible}
+  #print-area{position:absolute;left:0;top:0;width:100%;padding:20px}
+  .tag-sheet{grid-template-columns:repeat(3,1fr)}
+}
+
+@media(max-width:1200px){.stats-row{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}.pos-grid{grid-template-columns:1fr}.tag-sheet{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen"><div class="logo-anim"><div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2L18.8 7 12 9.8 5.2 7 12 4.2zM4 8.5l7 3.3v7.4l-7-3.5V8.5zm16 0v7.2l-7 3.5v-7.4l7-3.3z"/></svg></div><div class="logo-text">StockPilot<small>BY SURYA AI</small></div></div><div class="loading-bar"><div class="loading-bar-inner"></div></div><div class="loading-subtext">Loading your inventory...</div></div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div><div class="modal-title" id="modal-title">Detail</div><div class="modal-sub" id="modal-sub"></div></div>
+      <div class="modal-close" onclick="closeModal()" title="Close (Esc)">&times;</div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2L18.8 7 12 9.8 5.2 7 12 4.2zM4 8.5l7 3.3v7.4l-7-3.5V8.5zm16 0v7.2l-7 3.5v-7.4l7-3.3z"/></svg></div><span class="sidebar-logo-text">StockPilot<small>BY SURYA AI</small></span></div></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <div class="nav-item active" data-sec="dashboard" onclick="sw('dashboard',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg><span>Dashboard</span></div>
+    <div class="nav-item" data-sec="inventory" onclick="sw('inventory',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.87L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zM3 21.5h8v-8H3v8z"/></svg><span>Inventory</span><span class="nav-badge" id="nav-dead">4</span></div>
+    <div class="nav-item" data-sec="intake" onclick="sw('intake',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM17 12V9.5h2.5l1.96 2.5H17zm1 6.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg><span>Intake (Truck)</span></div>
+    <div class="nav-item" data-sec="billing" onclick="sw('billing',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><span>Billing (POS)</span></div>
+    <div class="nav-section-label" style="margin-top:8px">Insights</div>
+    <div class="nav-item" data-sec="reports" onclick="sw('reports',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg><span>Reports</span></div>
+  </nav>
+  <div class="sidebar-footer"><div class="avatar">SD</div><div><div class="sidebar-footer-name">Suresh Devar</div><div class="sidebar-footer-role">Owner · Salem</div></div></div>
+</aside>
+
+<main class="main">
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-shop"><div class="topbar-shop-icon">SD</div><div><div class="topbar-shop-name">Sri Devi Sarees</div><div class="topbar-shop-loc">Salem, Tamil Nadu · GSTIN 33ABCDE1234F1Z5</div></div></div>
+  <div class="topbar-right">
+    <input class="topbar-search" placeholder="Search SKU, design...">
+    <div class="topbar-bell" title="Alerts">&#128276;<span class="dot"></span></div>
+    <div class="topbar-user"><div class="avatar">SD</div><div><div class="topbar-user-name">Suresh Devar</div><div class="topbar-user-role">Owner</div></div></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="section active" id="sec-dashboard">
+  <div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-subtitle">Good morning, Suresh. Here is your shop at a glance — June 15, 2026.</div></div><div class="page-actions"><button class="btn btn-secondary" onclick="showToast('Day-end report exported','blue')">Export</button><button class="btn btn-primary" onclick="sw('intake',document.querySelector('[data-sec=intake]'))">+ New Stock Batch</button></div></div>
+  <div class="page-content">
+    <div class="stats-row" id="dash-stats"></div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card"><div class="card-title">Stock health — capital by movement <span class="pill amber" id="dash-health-pill">—</span></div>
+        <div class="donut-wrap"><div class="donut" id="dash-donut"><div class="donut-hole"><div class="donut-center" id="dash-donut-center"></div><div class="donut-center-lbl">in stock</div></div></div><div class="donut-legend" id="dash-donut-legend"></div></div>
+      </div>
+      <div class="card"><div class="card-title">Capital tied by category</div><div id="dash-cat"></div>
+        <div class="callout amber" style="margin-top:14px"><span class="ci">&#128176;</span><span id="dash-cat-note">—</span></div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card"><div class="card-title">Revenue — last 7 days <span class="pill green" id="dash-rev-pill">—</span></div><div id="dash-trend"></div>
+        <div class="trend-foot" id="dash-trend-foot"></div>
+      </div>
+      <div class="card"><div class="card-title">Units sold this week</div><div class="minibars" id="dash-week"></div>
+        <div style="margin-top:14px;font-size:11.5px;color:var(--gray-400);text-align:center">Peak day <b style="color:var(--gray-600)" id="dash-peak">—</b> · click a bar for detail</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card"><div class="card-title">Top Fast-Movers <span class="pill green">This month</span></div><div class="mover-list" id="dash-fast"></div></div>
+      <div class="card"><div class="card-title">Dead Stock — sitting &gt;180 days <span class="pill red" id="dash-frozen">Frozen ₹0</span></div><div class="mover-list" id="dash-dead"></div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card"><div class="card-title">Sell-through rate by category</div><div id="dash-sellthrough"></div></div>
+      <div class="card"><div class="card-title">Recent Activity</div><div class="activity-feed">
+        <div class="activity-item"><div class="activity-icon green">&#10003;</div><div><div style="font-size:13px;color:var(--gray-600)">Sold <b>SA-014</b> Banarasi Silk Green &mdash; ₹12,500</div><div class="activity-time">8 min ago · Counter 1</div></div></div>
+        <div class="activity-item"><div class="activity-icon red">&#9888;</div><div><div style="font-size:13px;color:var(--gray-600)"><b style="color:var(--red-600)">Tag mismatch blocked</b> at counter &mdash; SA-009 photo did not match item</div><div class="activity-time">41 min ago · Counter 2</div></div></div>
+        <div class="activity-item"><div class="activity-icon blue">&#128230;</div><div><div style="font-size:13px;color:var(--gray-600)">Intake batch <b>B-2206</b> &mdash; 15 sarees from Kumaran Silks tagged</div><div class="activity-time">2 hrs ago · Suresh</div></div></div>
+        <div class="activity-item"><div class="activity-icon amber">&#8987;</div><div><div style="font-size:13px;color:var(--gray-600)"><b>SA-006</b> Mysore Silk now flagged <b style="color:var(--amber-600)">slow-mover</b> (97 days)</div><div class="activity-time">Today, 9:10 AM</div></div></div>
+        <div class="activity-item"><div class="activity-icon green">&#10003;</div><div><div style="font-size:13px;color:var(--gray-600)">Sold <b>SA-001</b> Kanjivaram Maroon &mdash; ₹18,000</div><div class="activity-time">Today, 8:52 AM</div></div></div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY -->
+<div class="section" id="sec-inventory">
+  <div class="page-header"><div><div class="page-title">Inventory</div><div class="page-subtitle">Every saree, tracked by SKU — cost, price, margin and age.</div></div><div class="page-actions"><button class="btn btn-secondary" onclick="showToast('Inventory exported to CSV','blue')">Export CSV</button><button class="btn btn-primary" onclick="sw('intake',document.querySelector('[data-sec=intake]'))">+ Add Stock</button></div></div>
+  <div class="page-content">
+    <div class="filter-bar">
+      <input class="search-input" id="inv-search" placeholder="Search SKU or design name..." oninput="renderInventory()">
+      <div class="filter-divider"></div>
+      <div class="filter-chip active" data-f="all" onclick="setInvFilter('all',this)">All</div>
+      <div class="filter-chip" data-f="Fast" onclick="setInvFilter('Fast',this)">Fast-movers</div>
+      <div class="filter-chip" data-f="Slow" onclick="setInvFilter('Slow',this)">Slow</div>
+      <div class="filter-chip" data-f="Dead" onclick="setInvFilter('Dead',this)">Dead stock</div>
+      <div style="flex:1"></div>
+      <div style="font-size:12px;color:var(--gray-400)" id="inv-count"></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrapper">
+        <table>
+          <thead><tr>
+            <th>SKU</th><th>Saree</th><th>Design</th><th>Category</th>
+            <th class="num">Purchase ₹</th><th class="num">Sale ₹</th><th class="num">Margin</th>
+            <th class="num">In</th><th class="num">Sold</th><th class="num">Left</th><th class="num">Age</th><th>Status</th>
+          </tr></thead>
+          <tbody id="inv-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INTAKE -->
+<div class="section" id="sec-intake">
+  <div class="page-header"><div><div class="page-title">Intake — Truck Arrival</div><div class="page-subtitle">Stock lands by the truckload. Enter the batch, auto-generate SKUs, print tags as you unload.</div></div></div>
+  <div class="page-content">
+    <div class="grid-2" style="align-items:start">
+      <div class="card">
+        <div class="card-title">New Stock Batch</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Supplier</label><select id="in-supplier"><option>Kumaran Silks, Kanchipuram</option><option>Salem Cotton Mills</option><option>Banaras Weavers Co.</option><option>RMKV Wholesale</option></select></div>
+          <div class="form-group"><label>Invoice No.</label><input id="in-invoice" value="KS/2026/4471"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Category</label><select id="in-cat"><option>Silk</option><option>Banarasi</option><option>Cotton</option><option>Georgette</option><option>Curtain</option></select></div>
+          <div class="form-group"><label>Design name</label><input id="in-design" value="Kanjivaram Silk - Royal Blue"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Quantity (sarees)</label><input id="in-qty" type="number" value="15"></div>
+          <div class="form-group"><label>Purchase cost / pc (₹)</label><input id="in-cost" type="number" value="9500"></div>
+        </div>
+        <div class="form-group"><label>Sale price / pc (₹)</label><input id="in-price" type="number" value="15000"></div>
+        <div class="callout amber" style="margin-bottom:16px"><span class="ci">&#129534;</span><span>Tag attaches to the <b>fold/knot (tassel end)</b> with a plastic kimble loop — never a needle through the fabric. Zero damage, standard textile practice.</span></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="generateBatch()">Generate SKUs &amp; Print Tags &rarr;</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Print Tags <span class="pill amber" id="intake-status">Awaiting batch</span></div>
+        <div id="intake-empty" style="text-align:center;padding:50px 20px;color:var(--gray-400)">
+          <div style="font-size:46px;margin-bottom:10px">&#127991;&#65039;</div>
+          <div style="font-size:13px">Enter a batch on the left and generate.<br>SKU codes and barcode tags will appear here, ready to print.</div>
+        </div>
+        <div id="intake-result" style="display:none">
+          <div class="callout blue" style="margin-bottom:14px"><span class="ci">&#10003;</span><span id="intake-summary"></span></div>
+          <div id="print-area">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div style="font-size:12px;font-weight:700;color:var(--gray-600);font-family:var(--font-mono)" id="intake-range"></div>
+              <button class="btn btn-secondary btn-sm" onclick="window.print()">&#128424;&#65039; Print sheet</button>
+            </div>
+            <div class="tag-sheet" id="tag-sheet"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BILLING -->
+<div class="section" id="sec-billing">
+  <div class="page-header"><div><div class="page-title">Billing — Counter / POS</div><div class="page-subtitle">Scan the tag. The saree's photo pops up so the cashier confirms the item matches — before it goes in the bill.</div></div></div>
+  <div class="page-content">
+    <div class="pos-grid">
+      <div>
+        <div class="card">
+          <div class="card-title">Scan / Add Item</div>
+          <div class="scan-box">
+            <input class="scan-input" id="scan-input" placeholder="Scan or type SKU (e.g. SA-001)" onkeydown="if(event.key==='Enter')scanAdd()">
+            <button class="btn btn-primary" onclick="scanAdd()">Add</button>
+          </div>
+          <div class="scan-hint">Quick pick (simulates barcode scan):</div>
+          <div class="scan-chips" id="scan-chips"></div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--gray-200)">
+            <button class="btn btn-danger btn-sm" onclick="scanSwapped()">&#9888; Simulate swapped tag</button>
+            <span style="font-size:11px;color:var(--gray-400);margin-left:8px">Demo: cheap ₹2,000 tag stuck on a premium saree.</span>
+          </div>
+        </div>
+
+        <!-- fraud banner -->
+        <div class="fraud-banner" id="fraud-banner" style="margin-top:14px">
+          <div class="fi">&#9888;</div>
+          <div style="flex:1">
+            <div class="ftitle">Tag mismatch — photo doesn't match the item</div>
+            <div class="fdesc">Scanned tag <b id="fraud-sku">SA-021</b> rings up as <b>"Cotton Saree - Plain Cream" at ₹2,000</b>, but the saree in hand is a <b id="fraud-real">premium Kanjivaram</b>. The bound photo does not match — <b>do not bill.</b> Call the supervisor.</div>
+            <div class="fraud-compare">
+              <div class="fc-side"><div class="fc-lbl">Tag says (₹2,000)</div><div class="swatch lg" id="fraud-sw-tag"><span class="border"></span></div></div>
+              <div class="fc-vs">&ne;</div>
+              <div class="fc-side"><div class="fc-lbl">Actual saree</div><div class="swatch lg" id="fraud-sw-real"><span class="border"></span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- confirm hero -->
+        <div class="confirm-item" id="confirm-item">
+          <div class="swatch lg" id="confirm-sw"><span class="border"></span></div>
+          <div class="confirm-meta">
+            <div class="confirm-tag" id="confirm-tag">&#10003; Photo matches — confirm &amp; add</div>
+            <div class="confirm-name" id="confirm-name">—</div>
+            <div class="confirm-sub" id="confirm-sub">—</div>
+            <div class="confirm-price" id="confirm-price">—</div>
+            <button class="btn btn-success confirm-add" id="confirm-add-btn" onclick="confirmAdd()">Confirm &amp; add to bill</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- cart -->
+      <div class="cart-panel">
+        <div class="cart-head"><h3>Invoice</h3><span class="cnt" id="cart-cnt">0 items</span></div>
+        <div class="cart-items" id="cart-items"><div class="cart-empty">Cart is empty.<br>Scan a saree tag to begin.</div></div>
+        <div class="cart-totals" id="cart-totals" style="display:none">
+          <div class="tot-row"><span>Subtotal</span><span class="mono" id="t-sub">₹0</span></div>
+          <div class="tot-row"><span>GST (5% textiles)</span><span class="mono" id="t-gst">₹0</span></div>
+          <div class="tot-row grand"><span>Grand Total</span><span class="mono" id="t-grand">₹0</span></div>
+        </div>
+        <div class="cart-pay" id="cart-pay" style="display:none">
+          <div class="upi-qr" id="upi-qr"></div>
+          <div style="flex:1">
+            <div style="font-size:11px;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;font-weight:600">Scan to pay · UPI</div>
+            <div style="font-size:12px;color:var(--gray-400);margin:4px 0">sridevisarees@upi</div>
+            <button class="btn btn-success btn-sm" style="width:100%;justify-content:center" onclick="checkout()">Charge &amp; Print Bill</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORTS -->
+<div class="section" id="sec-reports">
+  <div class="page-header"><div><div class="page-title">Reports</div><div class="page-subtitle">Where your capital is — fast vs. dead, ageing, and margin by category.</div></div><div class="page-actions"><button class="btn btn-secondary" onclick="showToast('Report exported','blue')">Export</button></div></div>
+  <div class="page-content">
+    <div class="stats-row" id="rep-stats" style="grid-template-columns:repeat(4,1fr)"></div>
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card"><div class="card-title">Fast vs. Slow vs. Dead</div><div id="rep-movers"></div><div style="display:flex;gap:16px;margin-top:14px;font-size:11px;color:var(--gray-500)"><span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green-500);margin-right:5px"></span>Fast</span><span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--amber-500);margin-right:5px"></span>Slow</span><span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red-500);margin-right:5px"></span>Dead</span></div></div>
+      <div class="card"><div class="card-title">Ageing buckets (qty left)</div><div id="rep-ageing"></div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-title">Margin by category</div><div class="table-wrapper"><table><thead><tr><th>Category</th><th class="num">Avg cost</th><th class="num">Avg sale</th><th class="num">Margin %</th></tr></thead><tbody id="rep-margin"></tbody></table></div></div>
+      <div class="card"><div class="card-title">Purchase cost vs. Sale value</div><div id="rep-value"></div>
+        <div class="callout blue" style="margin-top:16px"><span class="ci">&#128161;</span><span id="rep-insight">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ============ DATA ============ */
+// deterministic colour per SKU
+function skuColor(name){let h=0;for(let i=0;i<name.length;i++)h=name.charCodeAt(i)+((h<<5)-h);const hue=Math.abs(h)%360;return [hue,(Math.abs(h>>3)%30)+55,(Math.abs(h>>6)%18)+38];}
+function swatchStyle(name){const [h,s,l]=skuColor(name);return `background:linear-gradient(135deg,hsl(${h} ${s}% ${l}%),hsl(${(h+28)%360} ${s}% ${Math.max(l-14,20)}%));`}
+
+const INV=[
+ {sku:'SA-001',name:'Kanjivaram Silk - Maroon Zari',cat:'Silk',cost:11500,price:18000,in:14,sold:11,age:38},
+ {sku:'SA-002',name:'Kanjivaram Silk - Peacock Blue',cat:'Silk',cost:12000,price:19500,in:12,sold:9,age:45},
+ {sku:'SA-003',name:'Banarasi Silk - Gold Brocade',cat:'Banarasi',cost:9800,price:16500,in:18,sold:15,age:29},
+ {sku:'SA-004',name:'Banarasi Silk - Rani Pink',cat:'Banarasi',cost:8500,price:14000,in:16,sold:13,age:34},
+ {sku:'SA-005',name:'Soft Silk - Mustard Temple',cat:'Silk',cost:4200,price:7500,in:25,sold:21,age:22},
+ {sku:'SA-006',name:'Mysore Silk - Olive Green',cat:'Silk',cost:6800,price:11000,in:10,sold:2,age:97},
+ {sku:'SA-007',name:'Cotton Saree - Salem Checks',cat:'Cotton',cost:850,price:1800,in:60,sold:52,age:18},
+ {sku:'SA-008',name:'Cotton Saree - Handloom Beige',cat:'Cotton',cost:1100,price:2400,in:40,sold:31,age:26},
+ {sku:'SA-009',name:'Designer Georgette - Wine Sequin',cat:'Georgette',cost:5500,price:9800,in:14,sold:10,age:41},
+ {sku:'SA-010',name:'Georgette - Floral Pastel',cat:'Georgette',cost:3200,price:6200,in:20,sold:6,age:118},
+ {sku:'SA-011',name:'Kanjivaram Silk - Bottle Green',cat:'Silk',cost:13500,price:22000,in:8,sold:1,age:214},
+ {sku:'SA-012',name:'Banarasi Silk - Deep Purple',cat:'Banarasi',cost:10500,price:17500,in:9,sold:1,age:198},
+ {sku:'SA-013',name:'Tussar Silk - Natural Beige',cat:'Silk',cost:3800,price:6800,in:15,sold:3,age:142},
+ {sku:'SA-014',name:'Banarasi Silk - Emerald Green',cat:'Banarasi',cost:7600,price:12500,in:13,sold:11,age:31},
+ {sku:'SA-015',name:'Cotton Saree - Plain Cream',cat:'Cotton',cost:600,price:1500,in:80,sold:14,age:205},
+ {sku:'SA-016',name:'Designer Curtain - Maroon Velvet',cat:'Curtain',cost:2400,price:4800,in:30,sold:24,age:27},
+ {sku:'SA-017',name:'Designer Curtain - Ivory Sheer',cat:'Curtain',cost:1800,price:3600,in:35,sold:4,age:191},
+ {sku:'SA-018',name:'Kanjivaram Bridal - Red Gold',cat:'Silk',cost:18500,price:25000,in:6,sold:5,age:24},
+];
+
+function enrich(s){
+  s.left=s.in-s.sold;
+  s.marginPct=Math.round(((s.price-s.cost)/s.price)*100);
+  const sellRate=s.sold/s.in;
+  if(s.age>180 && sellRate<0.4) s.status='Dead';
+  else if((s.age>90 && sellRate<0.55)||sellRate<0.35) s.status='Slow';
+  else s.status='Fast';
+  return s;
+}
+INV.forEach(enrich);
+
+/* ============ HELPERS ============ */
+function inr(n){ // Indian grouping
+  n=Math.round(n);
+  const s=n.toString();
+  if(s.length<=3) return '₹'+s;
+  let last3=s.slice(-3), rest=s.slice(0,-3);
+  rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,',');
+  return '₹'+rest+','+last3;
+}
+function inrShort(n){if(n>=10000000)return '₹'+(n/10000000).toFixed(2)+'Cr';if(n>=100000)return '₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return '₹'+Math.round(n/1000)+'k';return '₹'+Math.round(n);}
+function marginClass(p){return p>=45?'margin-good':p>=30?'margin-mid':'margin-low';}
+// SVG area/line chart — responsive, points clickable
+function areaChart(vals,labels,units){
+  const W=340,H=150,pL=12,pR=12,pT=16,pB=24, pw=W-pL-pR, ph=H-pT-pB, base=pT+ph;
+  const max=Math.max(...vals)*1.14||1;
+  const x=i=>pL+(vals.length<=1?pw/2:i*pw/(vals.length-1));
+  const y=v=>pT+ph*(1-v/max);
+  const pts=vals.map((v,i)=>[x(i),y(v)]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area='M'+pL+' '+base+' '+pts.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+' L'+(pL+pw)+' '+base+' Z';
+  const grid=[0,.5,1].map(f=>{const gy=(pT+ph*f).toFixed(1);return '<line class="grid-line" x1="'+pL+'" y1="'+gy+'" x2="'+(W-pR)+'" y2="'+gy+'"/>';}).join('');
+  const dots=pts.map((p,i)=>'<circle class="pt-hit" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="14" fill="transparent" onclick="openDay(\''+labels[i]+'\','+units[i]+')"><title>'+labels[i]+': '+inr(vals[i])+'</title></circle><circle class="pt" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.6" fill="#fff" stroke="var(--green-600)" stroke-width="2.5" pointer-events="none"/>').join('');
+  const xl=labels.map((l,i)=>'<text class="x-lbl" x="'+x(i).toFixed(1)+'" y="'+(H-7)+'" text-anchor="middle">'+l+'</text>').join('');
+  return '<svg class="area-chart" viewBox="0 0 '+W+' '+H+'"><defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--green-500)"/><stop offset="100%" stop-color="var(--green-500)" stop-opacity="0"/></linearGradient></defs>'+grid+'<path class="area-fill" d="'+area+'" fill="url(#areaGrad)"/><path class="area-line" d="'+line+'" stroke="var(--green-600)"/>'+dots+xl+'</svg>';
+}
+function statusBadge(st){const m={Fast:'badge-fast',Slow:'badge-slow',Dead:'badge-dead'};return `<span class="status-badge ${m[st]}">${st}</span>`;}
+function swatchSm(name){return `<div class="swatch sm" style="${swatchStyle(name)}"><span class="border"></span></div>`;}
+
+/* ============ DETAIL MODAL ============ */
+function openModal(title,sub,bodyHTML,footHTML){
+  document.getElementById('modal-title').innerHTML=title;
+  document.getElementById('modal-sub').innerHTML=sub||'';
+  document.getElementById('modal-body').innerHTML=bodyHTML;
+  document.getElementById('modal-foot').innerHTML=footHTML||'';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// a clickable row that drills into a SKU
+function skuRow(s,valHTML){
+  return `<div class="dl-row" onclick="skuDetail('${s.sku}')">${swatchSm(s.name)}
+    <div class="dl-info"><div class="dl-name">${s.name}</div><div class="dl-meta">${s.sku} · ${s.cat} · ${s.left} left · ${s.age}d</div></div>
+    <div class="dl-val">${valHTML}</div></div>`;
+}
+function listModal(title,sub,items,valFn,footHTML){
+  const body=items.length?`<div class="detail-list">${items.map(s=>skuRow(s,valFn(s))).join('')}</div>`
+    :`<div class="modal-empty">No items here.</div>`;
+  openModal(title,sub,body,footHTML);
+}
+
+// rich single-SKU detail
+function skuDetail(code){
+  const s=findSku(code); if(!s)return;
+  const capital=s.left*s.cost, potential=s.left*s.price;
+  const sellRate=Math.round(s.sold/s.in*100);
+  const mc=marginClass(s.marginPct).replace('margin-good','green').replace('margin-mid','amber').replace('margin-low','red');
+  const insight={
+    Fast:`<span class="ci">&#128640;</span><span><b>Fast-mover.</b> ${sellRate}% sold in ${s.age} days. Reorder soon so you don't run out — this is where your cash should sit.</span>`,
+    Slow:`<span class="ci">&#8987;</span><span><b>Slowing down.</b> Only ${sellRate}% sold in ${s.age} days. Push it on WhatsApp or move it to the front before it turns dead.</span>`,
+    Dead:`<span class="ci">&#9888;</span><span><b>Dead stock.</b> ${inr(capital)} of capital frozen for ${s.age} days at ${sellRate}% sold. Mark it down or bundle it to free the cash.</span>`
+  }[s.status];
+  const calloutClr=s.status==='Dead'?'amber':'blue';
+  const body=`
+    <div class="sku-hero">
+      <div class="swatch lg" style="${swatchStyle(s.name)}"><span class="border"></span></div>
+      <div class="sku-hero-meta">
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400);font-weight:600">${s.sku} · ${s.cat}</div>
+        <div style="font-family:var(--font-heading);font-size:20px;color:var(--gray-900);line-height:1.2;margin:4px 0 8px">${s.name}</div>
+        ${statusBadge(s.status)}
+      </div>
+    </div>
+    <div class="sku-metrics">
+      <div class="metric-box"><div class="ml">Purchase</div><div class="mv">${inr(s.cost)}</div></div>
+      <div class="metric-box"><div class="ml">Sale (MRP)</div><div class="mv">${inr(s.price)}</div></div>
+      <div class="metric-box"><div class="ml">Margin</div><div class="mv ${mc}">${s.marginPct}%</div></div>
+      <div class="metric-box"><div class="ml">Received</div><div class="mv">${s.in}</div></div>
+      <div class="metric-box"><div class="ml">Sold</div><div class="mv green">${s.sold}</div></div>
+      <div class="metric-box"><div class="ml">Left</div><div class="mv">${s.left}</div></div>
+      <div class="metric-box"><div class="ml">Age</div><div class="mv">${s.age}d</div></div>
+      <div class="metric-box"><div class="ml">Capital tied</div><div class="mv ${s.status==='Dead'?'red':''}">${inr(capital)}</div></div>
+      <div class="metric-box"><div class="ml">Worth (MRP)</div><div class="mv green">${inr(potential)}</div></div>
+    </div>
+    <div class="callout ${calloutClr}">${insight}</div>`;
+  const foot=`<button class="btn btn-secondary btn-sm" onclick="goInventory('${s.sku}')">View in inventory</button>
+    <button class="btn btn-primary btn-sm" onclick="closeModal();sw('billing',document.querySelector('[data-sec=billing]'));setTimeout(()=>{document.getElementById('scan-input').value='${s.sku}';scanAdd();},120)">Bill this saree</button>`;
+  openModal('Saree detail','Bound to its tag &amp; barcode — this is what the cashier sees on scan.',body,foot);
+}
+function goInventory(sku){closeModal();sw('inventory',document.querySelector('[data-sec=inventory]'));const si=document.getElementById('inv-search');si.value=sku;setInvFilter('all',document.querySelector('#sec-inventory .filter-chip[data-f=all]'));renderInventory();}
+
+// dashboard / report metric cards
+function openMetric(key){
+  if(key==='stockValue'||key==='capital'){
+    const cats={};INV.forEach(s=>{cats[s.cat]=(cats[s.cat]||0)+s.left*s.cost;});
+    const total=Object.values(cats).reduce((a,b)=>a+b,0);
+    const body=`<div class="detail-list">${Object.keys(cats).sort((a,b)=>cats[b]-cats[a]).map(c=>`
+      <div class="dl-row" onclick="openCategory('${c}')"><div class="dl-info"><div class="dl-name">${c}</div><div class="dl-meta">${(cats[c]/total*100).toFixed(0)}% of capital</div></div><div class="dl-val">${inr(cats[c])}</div></div>`).join('')}</div>
+      <div class="callout blue" style="margin-top:14px"><span class="ci">&#128176;</span><span><b>${inr(total)}</b> is tied up in unsold stock at purchase cost. Click a category to see its sarees.</span></div>`;
+    openModal('Capital in stock',inr(total)+' across '+Object.keys(cats).length+' categories — at purchase cost.',body);
+  } else if(key==='inStock'){
+    const items=[...INV].filter(s=>s.left>0).sort((a,b)=>b.left-a.left);
+    listModal('Sarees in stock',items.reduce((a,s)=>a+s.left,0)+' pieces across '+items.length+' designs.',items,s=>s.left+' left');
+  } else if(key==='soldMonth'){
+    const items=[...INV].filter(s=>s.sold>0).sort((a,b)=>b.sold-a.sold);
+    listModal('Sold this month',items.reduce((a,s)=>a+s.sold,0)+' pieces sold. Top sellers first.',items,s=>s.sold+' sold');
+  } else if(key==='deadValue'){ openStatusList('Dead'); }
+  else if(key==='todaySales'){
+    const bills=[{sku:'SA-014',t:'Counter 1 · 8 min ago'},{sku:'SA-001',t:'Counter 1 · 8:52 AM'},{sku:'SA-003',t:'Counter 2 · 8:30 AM'},{sku:'SA-007',t:'Counter 1 · 8:05 AM'},{sku:'SA-016',t:'Counter 2 · 7:50 AM'}];
+    const body=`<div class="detail-list">${bills.map(b=>{const s=findSku(b.sku);return `<div class="dl-row" onclick="skuDetail('${b.sku}')">${swatchSm(s.name)}<div class="dl-info"><div class="dl-name">${s.name}</div><div class="dl-meta">${b.sku} · ${b.t}</div></div><div class="dl-val">${inr(s.price)}</div></div>`;}).join('')}</div>
+      <div class="callout blue" style="margin-top:14px"><span class="ci">&#128181;</span><span><b>9 bills · ₹64,200</b> today across 2 counters. 1 tag-mismatch was blocked at the counter.</span></div>`;
+    openModal("Today's sales",'₹64,200 · 9 bills · 2 counters.',body);
+  }
+  else if(key==='potential'){
+    const items=[...INV].sort((a,b)=>b.left*b.price-a.left*a.price);
+    listModal('Potential sale value','If everything in stock sells at MRP.',items,s=>inr(s.left*s.price));
+  }
+  else if(key==='realised'){
+    const items=[...INV].filter(s=>s.sold>0).sort((a,b)=>b.sold*(b.price-b.cost)-a.sold*(a.price-a.cost));
+    listModal('Realised margin','Profit booked on sarees already sold.',items,s=>inr(s.sold*(s.price-s.cost)));
+  }
+}
+function openStatusList(status){
+  const items=[...INV].filter(s=>s.status===status).sort((a,b)=>status==='Fast'?b.sold-a.sold:b.age-a.age);
+  const sub={Fast:'Selling well — reorder these.',Slow:'Losing pace — push before they go dead.',Dead:'Capital frozen >180 days — clear these.'}[status];
+  const cap=items.reduce((a,s)=>a+s.left*s.cost,0);
+  const foot=status==='Dead'?`<button class="btn btn-primary btn-sm" onclick="closeModal();showToast('Clearance list pushed to WhatsApp','green')">Push clearance to WhatsApp</button>`:'';
+  listModal(status+'-movers',sub+' '+inr(cap)+' capital here.',items,s=>status==='Fast'?s.sold+' sold':s.age+'d',foot);
+}
+function openAgeBucket(key){
+  const test={'0–30':s=>s.age<=30,'31–90':s=>s.age>30&&s.age<=90,'91–180':s=>s.age>90&&s.age<=180,'180+':s=>s.age>180}[key];
+  const items=INV.filter(test).sort((a,b)=>b.age-a.age);
+  listModal(key+' days',items.reduce((a,s)=>a+s.left,0)+' pieces in this age band.',items,s=>s.age+'d · '+s.left+' left');
+}
+function openCategory(cat){
+  const items=INV.filter(s=>s.cat===cat).sort((a,b)=>b.marginPct-a.marginPct);
+  const ac=items.reduce((a,s)=>a+s.cost,0)/items.length, ap=items.reduce((a,s)=>a+s.price,0)/items.length;
+  listModal(cat+' — '+items.length+' designs','Avg cost '+inr(ac)+' · avg sale '+inr(ap)+' · margin '+Math.round((ap-ac)/ap*100)+'%.',items,s=>s.marginPct+'%');
+}
+function openDay(day,val){
+  openModal('Sales · '+day,val+' sarees billed.',`<div class="callout blue"><span class="ci">&#128202;</span><span>${day} booked <b>${val} sales</b>. ${day==='Sat'?'Saturday is your peak — staff the counters and keep fast-movers stocked.':'Click through to Reports for the full week and margin view.'}</span></div>`,`<button class="btn btn-secondary btn-sm" onclick="closeModal();sw('reports',document.querySelector('[data-sec=reports]'))">Open Reports</button>`);
+}
+
+/* ============ NAV ============ */
+function sw(sec,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const nav=el&&el.classList.contains('nav-item')?el:document.querySelector('[data-sec="'+sec+'"]');
+  if(nav)nav.classList.add('active');
+  window.scrollTo(0,0);
+  if(sec==='billing')setTimeout(()=>{const si=document.getElementById('scan-input');if(si)si.focus();},50);
+}
+
+/* ============ DASHBOARD ============ */
+function renderDashboard(){
+  const totalValue=INV.reduce((a,s)=>a+s.left*s.cost,0);
+  const totalLeft=INV.reduce((a,s)=>a+s.left,0);
+  const soldMonth=INV.reduce((a,s)=>a+s.sold,0);
+  const deadVal=INV.filter(s=>s.status==='Dead').reduce((a,s)=>a+s.left*s.cost,0);
+  const todaySales=64200;
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card clickable" onclick="openMetric('stockValue')"><div class="stat-card-icon amber"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div><div class="stat-card-label">Stock value</div><div class="stat-card-value">${inr(totalValue)}</div><div class="stat-card-sub">at purchase cost</div><div class="drill-hint">View breakdown &rarr;</div></div>
+    <div class="stat-card clickable" onclick="openMetric('inStock')"><div class="stat-card-icon purple"><svg viewBox="0 0 24 24"><path d="M12 2l-5.5 9h11L12 2zm5.5 11c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zM3 21.5h8v-8H3v8z"/></svg></div><div class="stat-card-label">Sarees in stock</div><div class="stat-card-value">${totalLeft}</div><div class="stat-card-sub">${INV.length} active designs</div><div class="drill-hint">View list &rarr;</div></div>
+    <div class="stat-card clickable" onclick="openMetric('soldMonth')"><div class="stat-card-icon green"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div><div class="stat-card-label">Sold this month</div><div class="stat-card-value">${soldMonth}</div><div class="stat-card-sub"><span style="color:var(--green-600)">+18%</span> vs last month</div><div class="drill-hint">Top sellers &rarr;</div></div>
+    <div class="stat-card alert clickable" onclick="openMetric('deadValue')"><div class="stat-card-icon red"><svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div><div class="stat-card-label">Dead-stock value</div><div class="stat-card-value danger">${inr(deadVal)}</div><div class="stat-card-sub" style="color:var(--red-500)">capital frozen &gt;180 days</div><div class="drill-hint">See dead stock &rarr;</div></div>
+    <div class="stat-card clickable" onclick="openMetric('todaySales')"><div class="stat-card-icon blue"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1z"/></svg></div><div class="stat-card-label">Today's sales</div><div class="stat-card-value revenue">${inr(todaySales)}</div><div class="stat-card-sub">9 bills · 2 counters</div><div class="drill-hint">View bills &rarr;</div></div>`;
+
+  // ---- donut: capital by movement status ----
+  const capByStatus={Fast:0,Slow:0,Dead:0};
+  INV.forEach(s=>capByStatus[s.status]+=s.left*s.cost);
+  const capTot=capByStatus.Fast+capByStatus.Slow+capByStatus.Dead||1;
+  const fDeg=capByStatus.Fast/capTot*360, sDeg=capByStatus.Slow/capTot*360;
+  const donut=document.getElementById('dash-donut');
+  donut.style.background=`conic-gradient(var(--green-500) 0 ${fDeg}deg,var(--amber-500) ${fDeg}deg ${fDeg+sDeg}deg,var(--red-500) ${fDeg+sDeg}deg 360deg)`;
+  document.getElementById('dash-donut-center').textContent=inrShort(capTot);
+  const cl=donut.querySelector('.donut-center-lbl'); if(cl)cl.textContent='at cost';
+  const deadPct=Math.round(capByStatus.Dead/capTot*100);
+  const hp=document.getElementById('dash-health-pill'); hp.textContent=deadPct+'% frozen'; hp.className='pill '+(deadPct>15?'red':'green');
+  const stColor={Fast:'var(--green-500)',Slow:'var(--amber-500)',Dead:'var(--red-500)'};
+  document.getElementById('dash-donut-legend').innerHTML=['Fast','Slow','Dead'].map(k=>{
+    const pct=Math.round(capByStatus[k]/capTot*100);
+    return `<div class="dlg-item" onclick="openStatusList('${k}')"><span class="dlg-dot" style="background:${stColor[k]}"></span><span class="dlg-name">${k}-movers</span><span class="dlg-val">${inr(capByStatus[k])}</span><span class="dlg-pct">${pct}%</span></div>`;
+  }).join('');
+
+  // ---- capital by category bars ----
+  const capCat={};
+  INV.forEach(s=>capCat[s.cat]=(capCat[s.cat]||0)+s.left*s.cost);
+  const catKeys=Object.keys(capCat).sort((a,b)=>capCat[b]-capCat[a]);
+  const catMax=Math.max(...catKeys.map(k=>capCat[k]));
+  const catColors=['linear-gradient(90deg,var(--amber-500),var(--orange-500))','linear-gradient(90deg,#7c3aed,#a855f7)','linear-gradient(90deg,var(--blue-600),var(--blue-500))','linear-gradient(90deg,var(--green-600),var(--green-500))','linear-gradient(90deg,#0891b2,#06b6d4)'];
+  document.getElementById('dash-cat').innerHTML=catKeys.map((k,i)=>`
+    <div class="bar-row clickable" onclick="openCategory('${k}')"><div class="bar-lbl">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(capCat[k]/catMax*100,9).toFixed(0)}%;background:${catColors[i%catColors.length]}"><span>${inr(capCat[k])}</span></div></div></div>`).join('');
+  const topCat=catKeys[0];
+  document.getElementById('dash-cat-note').innerHTML=`<b>${topCat}</b> holds the most capital — ${inr(capCat[topCat])} (${Math.round(capCat[topCat]/capTot*100)}% of stock). Click a category for its sarees.`;
+
+  // ---- revenue trend (7 days) ----
+  const week=[{d:'Mon',u:41,rev:58000},{d:'Tue',u:33,rev:44500},{d:'Wed',u:58,rev:79000},{d:'Thu',u:47,rev:61000},{d:'Fri',u:72,rev:96000},{d:'Sat',u:96,rev:142000},{d:'Sun',u:64,rev:88000}];
+  const revTot=week.reduce((a,w)=>a+w.rev,0);
+  const best=week.reduce((a,w)=>w.rev>a.rev?w:a);
+  document.getElementById('dash-trend').innerHTML=areaChart(week.map(w=>w.rev),week.map(w=>w.d),week.map(w=>w.u));
+  document.getElementById('dash-rev-pill').textContent=inrShort(revTot)+' total';
+  document.getElementById('dash-trend-foot').innerHTML=`<span><span class="tf-k">Week </span><span class="tf-v">${inr(revTot)}</span></span><span><span class="tf-k">Best </span><span class="tf-v">${best.d} · ${inr(best.rev)}</span></span><span><span class="tf-k">Daily avg </span><span class="tf-v">${inr(revTot/7)}</span></span>`;
+
+  // ---- units sold bars ----
+  const umax=Math.max(...week.map(w=>w.u));
+  document.getElementById('dash-week').innerHTML=week.map(w=>`
+    <div class="minibar clickable" onclick="openDay('${w.d}',${w.u})"><div class="bar" style="height:${(w.u/umax*100)}%"><span class="bar-val">${w.u}</span></div><div class="bar-lbl">${w.d}</div></div>`).join('');
+  document.getElementById('dash-peak').textContent=best.d+' · '+best.u+' units';
+
+  // ---- fast movers ----
+  const fast=[...INV].filter(s=>s.status==='Fast').sort((a,b)=>b.sold-a.sold).slice(0,5);
+  document.getElementById('dash-fast').innerHTML=fast.map(s=>`
+    <div class="mover-item clickable" onclick="skuDetail('${s.sku}')"><div class="swatch" style="${swatchStyle(s.name)}"><span class="border"></span></div>
+    <div class="mover-info"><div class="mover-name">${s.name}</div><div class="mover-meta">${s.sku} · ${inr(s.price)}</div></div>
+    <span class="mover-badge mb-green">${s.sold} sold</span></div>`).join('');
+
+  // ---- dead stock ----
+  const dead=[...INV].filter(s=>s.status==='Dead').sort((a,b)=>b.age-a.age);
+  const frozen=dead.reduce((a,s)=>a+s.left*s.cost,0);
+  document.getElementById('dash-frozen').textContent='Frozen '+inr(frozen);
+  document.getElementById('dash-dead').innerHTML=dead.map(s=>`
+    <div class="mover-item clickable" onclick="skuDetail('${s.sku}')"><div class="swatch" style="${swatchStyle(s.name)}"><span class="border"></span></div>
+    <div class="mover-info"><div class="mover-name">${s.name}</div><div class="mover-meta">${s.sku} · ${s.left} left · ${inr(s.left*s.cost)} capital</div></div>
+    <span class="mover-badge mb-red">${s.age} days</span></div>`).join('');
+
+  // ---- sell-through by category ----
+  const stCat={};
+  INV.forEach(s=>{if(!stCat[s.cat])stCat[s.cat]={sold:0,in:0};stCat[s.cat].sold+=s.sold;stCat[s.cat].in+=s.in;});
+  const stKeys=Object.keys(stCat).sort((a,b)=>(stCat[b].sold/stCat[b].in)-(stCat[a].sold/stCat[a].in));
+  document.getElementById('dash-sellthrough').innerHTML=stKeys.map(k=>{
+    const r=Math.round(stCat[k].sold/stCat[k].in*100);
+    const clr=r>=70?'var(--green-500)':r>=40?'var(--amber-500)':'var(--red-500)';
+    return `<div class="bar-row clickable" onclick="openCategory('${k}')"><div class="bar-lbl">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${r}%;background:${clr}"><span>${r}%</span></div></div></div>`;
+  }).join('');
+}
+
+/* ============ INVENTORY ============ */
+let invFilter='all';
+function setInvFilter(f,el){invFilter=f;document.querySelectorAll('#sec-inventory .filter-chip').forEach(c=>c.classList.remove('active','fast','slow','dead'));el.classList.add('active');if(f==='Fast')el.classList.add('fast');if(f==='Slow')el.classList.add('slow');if(f==='Dead')el.classList.add('dead');renderInventory();}
+function renderInventory(){
+  const q=(document.getElementById('inv-search').value||'').toLowerCase();
+  const rows=INV.filter(s=>(invFilter==='all'||s.status===invFilter)&&(s.sku.toLowerCase().includes(q)||s.name.toLowerCase().includes(q)));
+  document.getElementById('inv-count').textContent=rows.length+' of '+INV.length+' SKUs';
+  document.getElementById('inv-body').innerHTML=rows.map(s=>`
+    <tr class="clickable" onclick="skuDetail('${s.sku}')">
+      <td class="mono" style="font-weight:600;color:var(--gray-800)">${s.sku}</td>
+      <td><div class="swatch sm" style="${swatchStyle(s.name)}"><span class="border"></span></div></td>
+      <td style="font-weight:600;color:var(--gray-800)">${s.name}</td>
+      <td>${s.cat}</td>
+      <td class="num">${inr(s.cost)}</td>
+      <td class="num">${inr(s.price)}</td>
+      <td class="num ${marginClass(s.marginPct)}">${s.marginPct}%</td>
+      <td class="num">${s.in}</td>
+      <td class="num">${s.sold}</td>
+      <td class="num" style="font-weight:700">${s.left}</td>
+      <td class="num">${s.age}d</td>
+      <td>${statusBadge(s.status)}</td>
+    </tr>`).join('');
+}
+
+/* ============ INTAKE ============ */
+let lastSkuNum=18;
+function generateBatch(){
+  const qty=Math.max(1,Math.min(60,parseInt(document.getElementById('in-qty').value)||0));
+  const design=document.getElementById('in-design').value||'New Saree Design';
+  const cat=document.getElementById('in-cat').value;
+  const cost=parseInt(document.getElementById('in-cost').value)||0;
+  const price=parseInt(document.getElementById('in-price').value)||0;
+  const supplier=document.getElementById('in-supplier').value;
+  const inv=document.getElementById('in-invoice').value;
+  const start=lastSkuNum+1, end=lastSkuNum+qty;
+  const pad=n=>'SA-'+String(n).padStart(3,'0');
+  document.getElementById('intake-empty').style.display='none';
+  document.getElementById('intake-result').style.display='block';
+  document.getElementById('intake-status').textContent='Batch ready';
+  document.getElementById('intake-status').className='pill green';
+  document.getElementById('intake-summary').innerHTML=`<b>${qty} SKUs generated</b> &mdash; ${pad(start)} to ${pad(end)} · ${supplier} · invoice ${inv}. Margin ${Math.round(((price-cost)/price)*100)||0}% per piece. Tags below, ready to print.`;
+  document.getElementById('intake-range').textContent=`Batch · ${pad(start)} → ${pad(end)} · ${cat}`;
+  // build tags (show up to 9 for preview)
+  const show=Math.min(qty,9);
+  let html='';
+  for(let i=0;i<show;i++){
+    const code=pad(start+i);
+    html+=`<div class="tag"><div class="tag-hole"></div><div class="tag-brand">Sri Devi Sarees</div><div class="tag-name">${design}</div><div class="tag-price">${inr(price)}</div><div class="barcode">${barcodeFor(code)}</div><div class="tag-sku">${code}</div></div>`;
+  }
+  if(qty>show) html+=`<div class="tag" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-style:solid;background:var(--gray-50);color:var(--gray-400);font-size:12px;text-align:center">+${qty-show} more tags<br>in this batch</div>`;
+  document.getElementById('tag-sheet').innerHTML=html;
+  showToast(qty+' SKUs generated · tags ready to print','green');
+}
+function barcodeFor(code){
+  let bars='';let seed=0;for(let i=0;i<code.length;i++)seed+=code.charCodeAt(i)*(i+3);
+  for(let i=0;i<34;i++){const w=((seed>>(i%8))+i)%3+1;bars+=`<i style="width:${w}px"></i>`;}
+  return bars;
+}
+
+/* ============ BILLING / POS ============ */
+let cart=[],pendingItem=null;
+function buildScanChips(){
+  const picks=['SA-001','SA-003','SA-007','SA-014','SA-018','SA-005'];
+  document.getElementById('scan-chips').innerHTML=picks.map(p=>`<div class="scan-chip" onclick="document.getElementById('scan-input').value='${p}';scanAdd()">${p}</div>`).join('');
+}
+function findSku(code){return INV.find(s=>s.sku.toLowerCase()===code.toLowerCase());}
+function scanAdd(){
+  hideFraud();
+  const code=(document.getElementById('scan-input').value||'').trim();
+  if(!code){return;}
+  const s=findSku(code);
+  document.getElementById('scan-input').value='';
+  if(!s){showToast('SKU '+code+' not found','red');return;}
+  showConfirm(s,false);
+}
+function showConfirm(s,mismatch){
+  pendingItem=s;
+  const c=document.getElementById('confirm-item');
+  c.classList.remove('mismatch');c.classList.add('show');
+  document.getElementById('confirm-sw').style.cssText=swatchStyle(s.name);
+  document.getElementById('confirm-sw').innerHTML='<span class="border"></span>';
+  document.getElementById('confirm-tag').innerHTML='&#10003; Photo matches — confirm &amp; add';
+  document.getElementById('confirm-name').textContent=s.name;
+  document.getElementById('confirm-sub').textContent=s.sku+' · '+s.cat+' · GST 5%';
+  document.getElementById('confirm-price').textContent=inr(s.price);
+  document.getElementById('confirm-add-btn').style.display='';
+  c.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function confirmAdd(){
+  if(!pendingItem)return;
+  cart.push({...pendingItem});
+  document.getElementById('confirm-item').classList.remove('show');
+  pendingItem=null;
+  renderCart();
+  showToast('Added to bill','green');
+  document.getElementById('scan-input').focus();
+}
+function scanSwapped(){
+  hideConfirm();
+  // tag claims a cheap cotton SKU; actual item in hand is a premium Kanjivaram
+  const tagItem=findSku('SA-015'); // Plain Cream cotton ₹1,500 -> we present as ₹2,000 swapped tag
+  const realItem=findSku('SA-018'); // Bridal Kanjivaram ₹25,000
+  document.getElementById('fraud-sku').textContent='SA-015';
+  document.getElementById('fraud-real').textContent='premium '+realItem.name;
+  document.getElementById('fraud-sw-tag').style.cssText=swatchStyle(tagItem.name);
+  document.getElementById('fraud-sw-tag').innerHTML='<span class="border"></span>';
+  document.getElementById('fraud-sw-real').style.cssText=swatchStyle(realItem.name);
+  document.getElementById('fraud-sw-real').innerHTML='<span class="border"></span>';
+  document.getElementById('fraud-banner').classList.add('show');
+  document.getElementById('fraud-banner').scrollIntoView({behavior:'smooth',block:'center'});
+  showToast('Tag mismatch detected — sale blocked','red');
+}
+function hideFraud(){document.getElementById('fraud-banner').classList.remove('show');}
+function hideConfirm(){document.getElementById('confirm-item').classList.remove('show');pendingItem=null;}
+function removeLine(i){cart.splice(i,1);renderCart();}
+function renderCart(){
+  document.getElementById('cart-cnt').textContent=cart.length+(cart.length===1?' item':' items');
+  if(!cart.length){
+    document.getElementById('cart-items').innerHTML='<div class="cart-empty">Cart is empty.<br>Scan a saree tag to begin.</div>';
+    document.getElementById('cart-totals').style.display='none';
+    document.getElementById('cart-pay').style.display='none';
+    return;
+  }
+  document.getElementById('cart-items').innerHTML=cart.map((s,i)=>`
+    <div class="cart-line"><div class="swatch sm" style="${swatchStyle(s.name)}"><span class="border"></span></div>
+    <div class="cart-line-info"><div class="cart-line-name">${s.name}</div><div class="cart-line-sku">${s.sku}</div></div>
+    <div class="cart-line-price">${inr(s.price)}</div><div class="cart-line-rm" onclick="removeLine(${i})">&times;</div></div>`).join('');
+  const sub=cart.reduce((a,s)=>a+s.price,0);
+  const gst=sub*0.05, grand=sub+gst;
+  document.getElementById('t-sub').textContent=inr(sub);
+  document.getElementById('t-gst').textContent=inr(gst);
+  document.getElementById('t-grand').textContent=inr(grand);
+  document.getElementById('cart-totals').style.display='block';
+  document.getElementById('cart-pay').style.display='flex';
+}
+function checkout(){
+  if(!cart.length)return;
+  const sub=cart.reduce((a,s)=>a+s.price,0);
+  showToast('Bill of '+inr(sub*1.05)+' charged · invoice printed','green');
+  cart=[];renderCart();
+}
+// simple deterministic QR-ish block
+function buildQR(){
+  const cells=11;let svg=`<svg viewBox="0 0 ${cells} ${cells}" xmlns="http://www.w3.org/2000/svg">`;
+  let seed=8675309;
+  for(let y=0;y<cells;y++)for(let x=0;x<cells;x++){
+    // finder squares
+    const fp=(x<3&&y<3)||(x>cells-4&&y<3)||(x<3&&y>cells-4);
+    seed=(seed*1103515245+12345)&0x7fffffff;
+    const on=fp?((x===0||x===2||x===cells-1||x===cells-3||y===0||y===2||y===cells-1||y===cells-3)?true:(x===1&&y===1)||(x===1&&y===cells-2)||(x===cells-2&&y===1)):((seed>>5)%2===0);
+    if(on)svg+=`<rect x="${x}" y="${y}" width="1" height="1" fill="#111827"/>`;
+  }
+  svg+='</svg>';
+  document.getElementById('upi-qr').innerHTML=svg;
+}
+
+/* ============ REPORTS ============ */
+function renderReports(){
+  const purchaseVal=INV.reduce((a,s)=>a+s.left*s.cost,0);
+  const saleVal=INV.reduce((a,s)=>a+s.left*s.price,0);
+  const realised=INV.reduce((a,s)=>a+s.sold*(s.price-s.cost),0);
+  const deadVal=INV.filter(s=>s.status==='Dead').reduce((a,s)=>a+s.left*s.cost,0);
+  document.getElementById('rep-stats').innerHTML=`
+    <div class="stat-card clickable" onclick="openMetric('capital')"><div class="stat-card-label">Capital in stock</div><div class="stat-card-value">${inr(purchaseVal)}</div><div class="stat-card-sub">at cost</div><div class="drill-hint">By category &rarr;</div></div>
+    <div class="stat-card clickable" onclick="openMetric('potential')"><div class="stat-card-label">Potential sale value</div><div class="stat-card-value revenue">${inr(saleVal)}</div><div class="stat-card-sub">at MRP</div><div class="drill-hint">View list &rarr;</div></div>
+    <div class="stat-card clickable" onclick="openMetric('realised')"><div class="stat-card-label">Realised margin</div><div class="stat-card-value revenue">${inr(realised)}</div><div class="stat-card-sub">profit on sold</div><div class="drill-hint">By saree &rarr;</div></div>
+    <div class="stat-card alert clickable" onclick="openMetric('deadValue')"><div class="stat-card-label">Frozen in dead stock</div><div class="stat-card-value danger">${inr(deadVal)}</div><div class="stat-card-sub" style="color:var(--red-500)">act now</div><div class="drill-hint">Clear these &rarr;</div></div>`;
+
+  // movers split by qty left
+  const buckets={Fast:0,Slow:0,Dead:0};
+  INV.forEach(s=>buckets[s.status]+=s.left);
+  const tot=buckets.Fast+buckets.Slow+buckets.Dead;
+  const colors={Fast:'var(--green-500)',Slow:'var(--amber-500)',Dead:'var(--red-500)'};
+  document.getElementById('rep-movers').innerHTML=['Fast','Slow','Dead'].map(k=>`
+    <div class="bar-row clickable" onclick="openStatusList('${k}')"><div class="bar-lbl">${k}-movers</div><div class="bar-track"><div class="bar-fill" style="width:${(buckets[k]/tot*100).toFixed(0)}%;background:${colors[k]}"><span>${buckets[k]} pc</span></div></div></div>`).join('');
+
+  // ageing buckets
+  const ag={'0–30':0,'31–90':0,'91–180':0,'180+':0};
+  INV.forEach(s=>{const a=s.age;if(a<=30)ag['0–30']+=s.left;else if(a<=90)ag['31–90']+=s.left;else if(a<=180)ag['91–180']+=s.left;else ag['180+']+=s.left;});
+  const agMax=Math.max(...Object.values(ag));
+  const agColors=['var(--green-500)','var(--blue-500)','var(--amber-500)','var(--red-500)'];
+  document.getElementById('rep-ageing').innerHTML=Object.keys(ag).map((k,i)=>`
+    <div class="bar-row clickable" onclick="openAgeBucket('${k}')"><div class="bar-lbl">${k} days</div><div class="bar-track"><div class="bar-fill" style="width:${(ag[k]/agMax*100).toFixed(0)}%;background:${agColors[i]}"><span>${ag[k]} pc</span></div></div></div>`).join('');
+
+  // margin by category
+  const cats={};
+  INV.forEach(s=>{if(!cats[s.cat])cats[s.cat]={c:0,p:0,n:0};cats[s.cat].c+=s.cost;cats[s.cat].p+=s.price;cats[s.cat].n++;});
+  document.getElementById('rep-margin').innerHTML=Object.keys(cats).map(k=>{const c=cats[k];const ac=c.c/c.n,ap=c.p/c.n,m=Math.round((ap-ac)/ap*100);return `<tr class="rep-margin-row" onclick="openCategory('${k}')"><td style="font-weight:600">${k}</td><td class="num">${inr(ac)}</td><td class="num">${inr(ap)}</td><td class="num ${marginClass(m)}">${m}%</td></tr>`;}).join('');
+
+  // purchase vs sale bars
+  const vMax=Math.max(purchaseVal,saleVal);
+  document.getElementById('rep-value').innerHTML=`
+    <div class="bar-row clickable" onclick="openMetric('capital')"><div class="bar-lbl">Purchase cost</div><div class="bar-track"><div class="bar-fill" style="width:${(purchaseVal/vMax*100).toFixed(0)}%;background:linear-gradient(90deg,#64748b,#94a3b8)"><span>${inr(purchaseVal)}</span></div></div></div>
+    <div class="bar-row clickable" onclick="openMetric('potential')"><div class="bar-lbl">Sale value</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--green-600),var(--green-500))"><span>${inr(saleVal)}</span></div></div></div>`;
+  document.getElementById('rep-insight').innerHTML=`Your stock cost <b>${inr(purchaseVal)}</b> and is worth <b>${inr(saleVal)}</b> at MRP — a potential margin of <b>${inr(saleVal-purchaseVal)}</b>. But <b>${inr(deadVal)}</b> of that capital is frozen in dead stock. Clear it (markdown / WhatsApp push) to free cash for fast-movers.`;
+}
+
+/* ============ TOAST ============ */
+function showToast(msg,color='green'){
+  const icons={green:'&#10003;',blue:'&#9432;',amber:'&#9888;',red:'&#9888;'};
+  const t=document.createElement('div');t.className='toast '+color;
+  t.innerHTML=`<span class="toast-icon">${icons[color]||icons.green}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},3200);
+}
+
+/* ============ INIT ============ */
+function init(){
+  renderDashboard();renderInventory();renderReports();buildScanChips();buildQR();renderCart();
+}
+window.addEventListener('load',()=>{
+  init();
+  setTimeout(()=>{document.getElementById('loading-screen').classList.add('hidden');},1400);
+});
+</script>
+</body>
+</html>
