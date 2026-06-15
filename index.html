@@ -300,8 +300,8 @@ tbody tr{transition:background .1s}tbody tr:hover{background:var(--amber-50)}
 .bar-row{display:flex;align-items:center;gap:12px;padding:7px 0}
 .bar-lbl{width:150px;font-size:12px;font-weight:500;color:var(--gray-600);flex-shrink:0;text-align:right}
 .bar-track{flex:1;height:26px;background:var(--gray-100);border-radius:6px;overflow:hidden;cursor:pointer}
-.bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;transition:width .7s ease}
-.bar-fill span{font-size:11px;font-weight:700;color:#fff;font-family:var(--font-mono)}
+.bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;transition:width .7s ease;min-width:66px}
+.bar-fill span{font-size:11px;font-weight:700;color:#fff;font-family:var(--font-mono);white-space:nowrap}
 .bar-track:hover .bar-fill{filter:brightness(1.08)}
 
 /* TOASTS */
